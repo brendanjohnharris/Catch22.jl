@@ -1,0 +1,13 @@
+name = "catch22"
+uuid = "acdeb78f-3d39-4310-8fdf-6d75c17c6d5a"
+authors = ["Brendan Harris <bhar9988@uni.sydney.edu.au> and contributors"]
+version = "0.1.0"
+
+[compat]
+julia = "1"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]
