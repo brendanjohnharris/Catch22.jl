@@ -38,35 +38,35 @@ featureDescriptions = [ # See catch22 paper
     #CO_trev_1_num
     "Time-reversibility statistic, ⟨(𝑥ₜ₊₁−𝑥ₜ)³⟩ₜ"
     #DN_OutlierInclude_p_001_mdrmd
-    ""
+    "Time intervals between successive extreme events above the mean"
     #DN_OutlierInclude_n_001_mdrmd
-    ""
+    "Time intervals between successive extreme events below the mean"
     #FC_LocalSimple_mean1_tauresrat
-    ""
+    "Change in correlation length after iterative differencing"
     #FC_LocalSimple_mean3_stderr
-    ""
+    "Mean error from a rolling 3-sample mean forecasting"
     #IN_AutoMutualInfoStats_40_gaussian_fmmi
-    ""
+    "First minimum of the automutual information function"
     #MD_hrv_classic_pnn40
-    ""
+    "Proportion of successive differences exceeding 0.04𝜎 (Mietus 2002)"
     #SB_BinaryStats_diff_longstretch0
-    ""
+    "Longest period of successive incremental decreases"
     #SB_BinaryStats_mean_longstretch1
-    ""
+    "Longest period of consecutive values above the mean"
     #SB_MotifThree_quantile_hh
-    ""
+    "Shannon entropy of two successive letters in equiprobable 3-letter symbolization"
     #SC_FluctAnal_2_rsrangefit_50_1_logi_prop_r1
-    ""
+    "Proportion of slower timescale fluctuations that scale with linearly rescaled range fits"
     #SC_FluctAnal_2_dfa_50_1_2_logi_prop_r1
-    ""
+    "Proportion of slower timescale fluctuations that scale with DFA (50% sampling)"
     #SP_Summaries_welch_rect_area_5_1
-    ""
+    "Total power in lowest fifth of frequencies in the Fourier power spectrum"
     #SP_Summaries_welch_rect_centroid
-    ""
+    "Centroid of the Fourier power spectrum"
     #SB_TransitionMatrix_3ac_sumdiagcov
-    ""
+    "Trace of covariance of transition matrix between symbols in 3-letter alphabet"
     #PD_PeriodicityWang_th0_01
-    ""]
+    "Periodicity measure of (Wang et al. 2007)"]
 
 features = Dict(featureNames .=> featureDescriptions)
 
