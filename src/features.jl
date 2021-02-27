@@ -1,3 +1,7 @@
+using Libdl
+using catch22_jll
+catch22_jll.__init__() # Initialise the c-library
+
 featureNames = [
     :DN_HistogramMode_5 # These shouldn't change between versions of catch22
     :DN_HistogramMode_10
@@ -21,6 +25,10 @@ featureNames = [
     :SP_Summaries_welch_rect_centroid
     :SB_TransitionMatrix_3ac_sumdiagcov
     :PD_PeriodicityWang_th0_01]
+
+d = dlopen(ccatch22)
+featurePointers = Dict(featureNames .=> dlsym.(d, featureNames))
+
 
 featureDescriptions = [ # See catch22 paper
     #DN_HistogramMode_5
@@ -68,19 +76,10 @@ featureDescriptions = [ # See catch22 paper
     #PD_PeriodicityWang_th0_01
     "Periodicity measure of (Wang et al. 2007)"]
 
-features = Dict(featureNames .=> featureDescriptions)
 
 """
-    features()
+    catch22.features
 
 A dictionary list of feature names, as symbols, and short descriptions, as strings.
-
-# Examples
-```@repl
-catch22.features()
-```
-```@eval
-catch22.features()
-```
 """
-features() = features
+features = Dict(featureNames .=> featureDescriptions)

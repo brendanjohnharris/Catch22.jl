@@ -1,13 +1,11 @@
 module catch22
-using catch22_jll
+using NamedArrays
 
-include(featureNames.jl)
+include("features.jl")
 
-
-# t = ccall((:DN_HistogramMode_5, catch22), Float64, (Array{Float64},Cint), a, 100)
 
 """
-    catch1(x::Vector{Union{Float64, Int}}, f::Symbol)
+    catch1(x::AbstractVector{Float64}, f::Symbol)
 
 Evaluate the feature 'f' on the time series 'x'
 
@@ -21,19 +19,50 @@ x = catch22.testData[:test]
 catch1(x, ::DN_HistogramMode_5)
 ```
 """
-catch1(x::Vector{Float64}, f::Symbol) = ccall((f, catch22),
-                                                Float64,
-                                                (Array{Float64},Cint),
-                                                x,
-                                                size(a)[1])
-catch1(x::Int, f::Symbol) = catch1(Float64.(x), f)
+catch1(x::AbstractVector{Float64}, f::Symbol) = ccall(featurePointers[f],
+                                                    Cdouble,
+                                                    (Ptr{Array{Cdouble}},Cint),
+                                                    x,
+                                                    Int(size(x)[1]))
+#catch1(x::Int, f::Symbol) = catch1(Float64.(x), f)
 
 
-# Give each feature a Julia function, called by its name
+
+"""
+    DN_HistogramMode_5(x::AbstractVector{Union{Float64, Int}}) # For example
+An alternative to 'catch1()'; specific features can be evaluated with functions called by their names
+
+# Examples
+```@repl
+x = catch22.testData[:test]
+CO_trev_1_num(x)
+```
+```@eval
+x = catch22.testData[:test]
+CO_trev_1_num(x)
+```
+"""
+
 for f = featureNames
     eval(quote
-        $f(x::Vector{Float64}) = catch1(x, f)
+        $f(x::AbstractVector{Float64}) = catch1(x, $(Meta.quot(f)))
     end)
 end
+
+
+
+
+function catch22_all(x::AbstractVector{Float64})
+    f = NamedArray(catch1.((x,), featureNames))
+    setnames!(f, String.(featureNames), 1)
+    return f
+end
+
+
+
+function catch22_all(X::AbstractArray{Float64})
+    F = mapslices(catch22_all, X, dims=[1])
+end
+
 
 end
