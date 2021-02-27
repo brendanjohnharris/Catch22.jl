@@ -6,6 +6,7 @@ version = "0.1.0"
 [deps]
 BinaryBuilder = "12aac903-9f7c-5d81-afc2-d9565ea332ae"
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
+NamedArrays = "86f7a689-2022-50b4-a561-43c23ac3c673"
 catch22_jll = "8a07c0c5-99ad-56cb-bc82-72eed1bb61ce"
 
 [compat]
