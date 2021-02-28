@@ -12,6 +12,7 @@ Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 catch22_jll = "8a07c0c5-99ad-56cb-bc82-72eed1bb61ce"
 
 [compat]
+NamedArrays = "0.9"
 BinaryBuilder = "0.2"
 julia = "1"
 
