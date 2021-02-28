@@ -1,4 +1,4 @@
-name = "catch22"
+name = "Catch22"
 uuid = "acdeb78f-3d39-4310-8fdf-6d75c17c6d5a"
 authors = ["Brendan Harris <bhar9988@uni.sydney.edu.au> and contributors"]
 version = "0.1.0"
@@ -13,7 +13,6 @@ catch22_jll = "8a07c0c5-99ad-56cb-bc82-72eed1bb61ce"
 
 [compat]
 NamedArrays = "0.9"
-BinaryBuilder = "0.2"
 julia = "1"
 
 [extras]
