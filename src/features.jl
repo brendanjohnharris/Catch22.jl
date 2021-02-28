@@ -1,7 +1,3 @@
-using Libdl
-using catch22_jll
-catch22_jll.__init__() # Initialise the c-library
-
 featureNames = [
     :DN_HistogramMode_5 # These shouldn't change between versions of catch22
     :DN_HistogramMode_10
@@ -26,9 +22,53 @@ featureNames = [
     :SB_TransitionMatrix_3ac_sumdiagcov
     :PD_PeriodicityWang_th0_01]
 
-d = dlopen(ccatch22)
-featurePointers = Dict(featureNames .=> dlsym.(d, featureNames))
-
+# So it turns out that not all of these c features return doubles... Had to manually check the header files
+featureTypes = [
+#DN_HistogramMode_5
+Cdouble
+#DN_HistogramMode_10
+Cdouble
+#CO_Embed2_Dist_tau_d_expfit_meandiff
+Cdouble
+#CO_f1ecac
+Cint
+#CO_FirstMin_ac
+Cint
+#CO_HistogramAMI_even_2_5
+Cdouble
+#CO_trev_1_num
+Cdouble
+#DN_OutlierInclude_p_001_mdrmd
+Cdouble
+#DN_OutlierInclude_n_001_mdrmd
+Cdouble
+#FC_LocalSimple_mean1_tauresrat
+Cdouble
+#FC_LocalSimple_mean3_stderr
+Cdouble
+#IN_AutoMutualInfoStats_40_gaussian_fmmi
+Cdouble
+#MD_hrv_classic_pnn40
+Cdouble
+#SB_BinaryStats_diff_longstretch0
+Cdouble
+#SB_BinaryStats_mean_longstretch1
+Cdouble
+#SB_MotifThree_quantile_hh
+Cdouble
+#SC_FluctAnal_2_rsrangefit_50_1_logi_prop_r1
+Cdouble
+#SC_FluctAnal_2_dfa_50_1_2_logi_prop_r1
+Cdouble
+#SP_Summaries_welch_rect_area_5_1
+Cdouble
+#SP_Summaries_welch_rect_centroid
+Cdouble
+#SB_TransitionMatrix_3ac_sumdiagcov
+Cdouble
+#PD_PeriodicityWang_th0_01
+Cint]
+featureTypes = Dict(featureNames .=> featureTypes)
 
 featureDescriptions = [ # See catch22 paper
     #DN_HistogramMode_5
@@ -80,6 +120,6 @@ featureDescriptions = [ # See catch22 paper
 """
     catch22.features
 
-A dictionary list of feature names, as symbols, and short descriptions, as strings.
+A dictionary listing feature names, as symbols, and short descriptions, as strings.
 """
 features = Dict(featureNames .=> featureDescriptions)
