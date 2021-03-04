@@ -80,9 +80,7 @@ function catch22(x::AbstractVector)
     setnames!(f, String.(featureNames), 1)
     return f
 end
-function catch22(X::AbstractArray)
-    F = mapslices(catch22, X, dims=[1])
-end
+catch22(X::AbstractArray) = mapslices(catch22, X, dims=[1])
 export catch22
 
 
