@@ -1,14 +1,12 @@
 module Catch22
 using catch22_jll
 using Libdl
-using NamedArrays
 using Statistics
 
 include("features.jl")
 include("testdata.jl")
 
 catch22_jll.__init__() # Initialise the c-library
-
 
 zscore(x::AbstractVector{Float64}) = (x .- Statistics.mean(x))./(Statistics.std(x))
 
@@ -24,7 +22,7 @@ x = Catch22.testData[:test]
 catch22(x, ::DN_HistogramMode_5)
 ```
 """
-function catch22(x::AbstractVector{Float64}, fName::Symbol)
+function catch22(x::AbstractVector{Float64}, fName::Symbol)::Float64
     if any(isinf.(x)) || any(isnan.(x))
         return NaN
     end
@@ -68,7 +66,7 @@ end
 """
     catch22(X::Union{Vector, Array})
 Evaluate all features for a time series vector or the columns of the time series array.
-Features are returned as a NamedArray, which behaves as a base array but has rows labelled with feature names.
+Features are returned in an Array, and feature names can be found in Catch22.featuresNames.
 
 # Examples
 ```julia-repl
@@ -77,8 +75,7 @@ DN_HistogramMode_5(x)
 ```
 """
 function catch22(x::AbstractVector)
-    f = NamedArray(catch22.((x,), featureNames))
-    setnames!(f, String.(featureNames), 1)
+    f = catch22.((x,), featureNames)
     return f
 end
 catch22(X::AbstractArray) = mapslices(catch22, X, dims=[1])
