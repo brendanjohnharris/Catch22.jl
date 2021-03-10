@@ -13,7 +13,6 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
-cd $WORKSPACE/srcdir
 cd catch22/C/
 echo -e 'CFLAGS = -fPIC\nLDFLAGS = -shared\nRM = rm -f\nTARGET_LIB = "lib${SRC_NAME}.${dlext}"\nSRCS = main.c CO_AutoCorr.c DN_HistogramMode_10.c DN_HistogramMode_5.c DN_OutlierInclude.c FC_LocalSimple.c IN_AutoMutualInfoStats.c MD_hrv.c PD_PeriodicityWang.c SB_BinaryStats.c SB_CoarseGrain.c SB_MotifThree.c SB_TransitionMatrix.c SC_FluctAnal.c SP_Summaries.c butterworth.c fft.c helper_functions.c histcounts.c splinefit.c stats.c\nOBJS = $(SRCS:.c=.o)\n.PHONY: all\nall: ${TARGET_LIB}\n$(TARGET_LIB): $(OBJS);    $(CC) ${LDFLAGS} -o $@ $^\n$(SRCS:.c=.d):%.d:%.c;$(CC) $(CFLAGS) -MM $< >$@\ninclude $(SRCS:.c=.d)\n.PHONY: clean\nclean:-${RM} ${TARGET_LIB} ${OBJS} $(SRCS:.c=.d)' >> Makefile
 make
