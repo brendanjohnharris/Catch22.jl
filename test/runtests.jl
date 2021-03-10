@@ -17,6 +17,7 @@ function isnearlyequalorallnan(a::Real, b::Real)
     isapprox(a, b, rtol=1e-5) || (isnan(a) && isnan(b))
 end
 # ----------------------------------- Test features one by one ----------------------------------- #
+println("Testing individual features")
 fs = catch22.(featureNames, (testData[:test],))
 arbIdx = 1 # These are tests, so efficiency not too important?
 @testset "Features $f" for f in featureNames
@@ -27,23 +28,26 @@ end
 
 
 # ------------------------- Test catch22, time series by time series ------------------------- #
+println("Testing sample datasets")
 function testFeatures(t::Symbol)
-    f = catch22(testData[t])
+    @time f = catch22(testData[t])
     ff = testOutput[t]
     isnearlyequalorallnan(f, ff)
 end
 # X = hcat(map(x -> get(testOutput, x, NaN), testNames)...)
 @testset "Datasets $f" for f in testNames
-        @test testFeatures(f)
+    @test testFeatures(f)
 end
 
 
 
 # --------------------------------- Test catch22 on an array --------------------------------- #
+println("Testing 1000×100 array input")
 X = randn(1000, 100)
 @testset "Arrays" begin
-    @test_nowarn catch22(X)
+    @test_nowarn begin
+        @time catch22(X)
+    end
 end;
-
 
 end

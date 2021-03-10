@@ -118,8 +118,7 @@ featureDescriptions = [ # See catch22 paper
 
 
 """
-    catch22.features
-
+    Catch22.features
 A dictionary listing feature names, as symbols, and short descriptions, as strings.
 """
 features = Dict(featureNames .=> featureDescriptions)
