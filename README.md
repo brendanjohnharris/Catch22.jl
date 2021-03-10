@@ -1,7 +1,7 @@
 # Catch22
 A Julia package wrapping [_catch22_](https://www.github.com/chlubba/catch22), which is a set of 22 minimally redundant time-series features shown by [Lubba et al. (2019)](https://doi.org/10.1007/s10618-019-00647-x) to be performant in a range of time-series classification problems.
 
-The [_catch22_](https://www.github.com/chlubba/catch22) repository provides these 22 features, originally coded in Matlab as part of the [_hctsa_](https://github.com/benfulcher/hctsa) toolbox, as C functions (in addition to Matlab and Python wrappers). This package simply uses Julia's `ccall` to wrap these C functions, which have been compiled into the shared library artifacts of [catch22_jll](https://github.com/JuliaBinaryWrappers/catch22_jll.jl) by the fantastic [BinaryBuilder](https://github.com/JuliaPackaging/BinaryBuilder.jl) package.
+The [_catch22_](https://www.github.com/chlubba/catch22) repository provides these 22 features, originally coded in Matlab as part of the [_hctsa_](https://github.com/benfulcher/hctsa) toolbox, as C functions (in addition to Matlab and Python wrappers). This package simply uses Julia's `ccall` to wrap these C functions from a shared library that is accessed through [catch22_jll](https://github.com/JuliaBinaryWrappers/catch22_jll.jl) and compiled by the fantastic [BinaryBuilder](https://github.com/JuliaPackaging/BinaryBuilder.jl) package.
 
 <br>
 
@@ -44,6 +44,6 @@ If a vector is provided (a single time series) then a scalar feature value will 
 ```Julia
 using DimensionalData
 val(𝐟)[1] # Get the feature names
-𝐠 = set(𝐟, timeseries = 'a'.+collect(0:9)) # Change the time series labels
+F = set(F, timeseries='a'.+collect(0:9)) # Change the time series labels to a:j
 ```
 Finally, `catch22` can be called with a vector of feature names to calculate a feature matrix for a subset of _catch22_.
