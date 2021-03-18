@@ -43,7 +43,7 @@ F = catch22(X) # Set of time series to feature matrix
 If a vector is provided (a single time series) then a scalar feature value will be returned. If an array is provided, a vector of features will be returned as a [DimArray](https://github.com/rafaqz/DimensionalData.jl). DimArrays inherit all properties and methods of Arrays but also allow feature names to be annotated, which can be accessed by:
 ```Julia
 using DimensionalData
-val(𝐟)[1] # Get the feature names
+dims(𝐟, :feature).val # Get the feature names
 F = set(F, timeseries='a'.+collect(0:9)) # Change the time series labels to a:j
 ```
 Finally, `catch22` can be called with a vector of feature names to calculate a feature matrix for a subset of _catch22_.
