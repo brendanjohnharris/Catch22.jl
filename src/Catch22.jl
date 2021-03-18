@@ -37,7 +37,7 @@ function catch22(𝐱::AbstractVector{Float64}, fName::Symbol)::Float64
         ccall(dlsym(dlopen(ccatch22), fName), Cint, (Ptr{Array{Cdouble}},Cint), 𝐱, Int(size(𝐱)[1]))
     end
 end
-catch22(X::AbstractArray, fName::Symbol) = mapslices(𝐱 -> catch22(𝐱, fName), X, dims=[1]) # This is a little slower to run the full feature set on, so only included for completeness.
+catch22(X::AbstractArray{Float64, 2}, fName::Symbol) = mapslices(𝐱 -> catch22(𝐱, fName), X, dims=[1]) # This is a little slower to run the full feature set on, so only included for completeness.
 
 
 featureVector(F::Vector{Float64}, fNames::Vector{Symbol}) = DimArray(F, (Dim{:feature}(fNames),))
@@ -58,10 +58,10 @@ X = randn(100, 10)
 F = catch22(X)
 ```
 """
-catch22(𝐱::AbstractVector) = featureVector(catch22.((𝐱,), featureNames), featureNames)
-catch22(X::AbstractArray) = featureMatrix(mapslices(catch22, X, dims=[1]), featureNames)
-catch22(𝐱::AbstractVector, fNames::Vector{Symbol}) = featureVector(catch22.((𝐱,), fNames), fNames)
-catch22(X::AbstractArray, fNames::Vector{Symbol}) = featureMatrix(mapslices(x->catch22(x, fNames), X, dims=[1]), fNames)
+catch22(𝐱::AbstractVector{Float64}) = featureVector(catch22.((𝐱,), featureNames), featureNames)
+catch22(X::AbstractArray{Float64, 2}) = featureMatrix(mapslices(catch22, X, dims=[1]), featureNames)
+catch22(𝐱::AbstractVector{Float64}, fNames::Vector{Symbol}) = featureVector(catch22.((𝐱,), fNames), fNames)
+catch22(X::AbstractArray{Float64, 2}, fNames::Vector{Symbol}) = featureMatrix(mapslices(x->catch22(x, fNames), X, dims=[1]), fNames)
 
 catch22(y, x) = catch22(x, y) # If you accidentally switch the inputs
 export catch22
@@ -78,14 +78,14 @@ An alternative to 'catch22(...)'; specific features (such as DN_HistogramMode_5)
 f = DN_HistogramMode_5(𝐱)
 ```
 """
-DN_HistogramMode_5(𝐱::AbstractVector) = catch22(𝐱, :DN_HistogramMode_5)
+DN_HistogramMode_5(𝐱::AbstractVector{Float64}) = catch22(𝐱, :DN_HistogramMode_5)
 # Do a feature manually for example
 export DN_HistogramMode_5
 
 # Then generate the rest
 for fName = featureNames[2:end]
     eval(quote
-        $fName(𝐱::AbstractVector) = catch22(𝐱, $(Meta.quot(fName))); export $fName
+        $fName(𝐱::AbstractVector{Float64}) = catch22(𝐱, $(Meta.quot(fName))); export $fName
     end)
 end
 
