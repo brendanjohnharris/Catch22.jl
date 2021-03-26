@@ -33,6 +33,7 @@ Alternatively, functions that calculate each feature individually are exported. 
 f = DN_HistogramMode_5(𝐱)
 ```
 
+## Evaluating a feature set
 If a vector is provided (a single time series) then a vector of feature values will be returned as a [DimArray](https://github.com/rafaqz/DimensionalData.jl). DimArrays inherit most properties and methods of Arrays but allow annotation with feature names, which can be accessed by:
 ```Julia
 using DimensionalData
