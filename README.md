@@ -33,11 +33,11 @@ Alternatively, functions that calculate each feature individually are exported. 
 f = DN_HistogramMode_5(𝐱)
 ```
 
-If a vector is provided (a single time series) then a vector of feature values will be returned as a [DimArray](https://github.com/rafaqz/DimensionalData.jl). DimArrays inherit most properties and methods of Arrays but also allow feature names to be annotated, which can be accessed by:
+If a vector is provided (a single time series) then a vector of feature values will be returned as a [DimArray](https://github.com/rafaqz/DimensionalData.jl). DimArrays inherit most properties and methods of Arrays but allow annotation with feature names, which can be accessed by:
 ```Julia
 using DimensionalData
 dims(𝐟, :feature).val # Get the feature names
-F = set(F, timeseries='a'.+collect(0:9)) # Change the time series labels to a:j
+F = set(F, timeseries='a'.+collect(0:9)) # Change the time series' labels to a:j
 ```
-If an array is provided, containing one time series per N columns, then a 22xN DimArray of feature values will be returned.
+If an array is provided, containing one time series in each of N columns, then a 22xN DimArray of feature values will be returned.
 Finally, `catch22` can be called with a vector of feature names to calculate a feature matrix for a subset of _catch22_.
