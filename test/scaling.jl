@@ -1,8 +1,6 @@
 using Catch22
 using Plots
 
-catch22(randn(1000))
-
 function timeCatch22(𝒳)
     t⃗ = [(@timed catch22(𝐱)) for 𝐱 ∈ 𝒳]
     ([x.time for x in t⃗], [x.bytes for x in t⃗])
