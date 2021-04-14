@@ -19,7 +19,7 @@ end
 # ----------------------------------- Test features one by one ----------------------------------- #
 println("Testing individual features")
 fs = catch22.(featureNames, (testData[:test],))
-arbIdx = 1 # These are tests, so efficiency not too important?
+arbIdx = 1
 @testset "Features $f" for f in featureNames
         @test isnearlyequalorallnan(fs[arbIdx], testOutput[:test][arbIdx])
         arbIdx += 1
@@ -30,6 +30,7 @@ end
 # ------------------------- Test catch22, time series by time series ------------------------- #
 println("Testing sample datasets")
 function testFeatures(t::Symbol)
+    f = catch22(testData[t])
     @time f = catch22(testData[t])
     ff = testOutput[t]
     isnearlyequalorallnan(f, ff)
@@ -46,6 +47,7 @@ println("Testing 1000×100 array input")
 X = randn(1000, 100)
 @testset "Arrays" begin
     @test_nowarn begin
+        catch22(X)
         @time catch22(X)
     end
 end;
