@@ -32,13 +32,14 @@ function catch22(𝐱::AbstractVector{Float64}, fName::Symbol)::Float64
     𝐱 = zscore(𝐱)
     fType = featureTypes[fName]
     if fType <: AbstractFloat
-        ccall(dlsym(dlopen(ccatch22), fName), Cdouble, (Ptr{Array{Cdouble}},Cint), 𝐱, Int(size(𝐱)[1]))
+        ccall(dlsym(dlopen(ccatch22), fName), Cdouble, (Ptr{Array{Cdouble}},Cint), 𝐱, Int(size(𝐱, 1)))
     elseif fType <: Integer
-        ccall(dlsym(dlopen(ccatch22), fName), Cint, (Ptr{Array{Cdouble}},Cint), 𝐱, Int(size(𝐱)[1]))
+        ccall(dlsym(dlopen(ccatch22), fName), Cint, (Ptr{Array{Cdouble}},Cint), 𝐱, Int(size(𝐱, 1)))
     end
 end
-catch22(X::AbstractArray{Float64, 2}, fName::Symbol) = mapslices(𝐱 -> catch22(𝐱, fName), X, dims=[1]) # This is a little slower to run the full feature set on, so only included for completeness.
-
+function catch22(X::AbstractArray{Float64, 2}, fName::Symbol)::AbstractArray{Float64, 2}
+    mapslices(𝐱 -> catch22(𝐱, fName), X, dims=[1])
+end
 
 """
     featureMatrix(F::Array{Float64, 2}, fNames::Vector{Symbol}, tNames)
