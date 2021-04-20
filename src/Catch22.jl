@@ -42,7 +42,7 @@ function catch22(X::AbstractArray{Float64, 2}, fName::Symbol)::AbstractArray{Flo
 end
 
 """
-    featureMatrix(F::Array{Float64, 2}, fNames::Vector{Symbol}, tNames)
+    featureMatrix(F::Array, fNames::Vector{Symbol}, tNames)
 Construct a DimArray labelled with fNames along rows (dimension :feature) and tNames along columns (dimension :timeseries)
 
 # Examples
@@ -50,8 +50,8 @@ Construct a DimArray labelled with fNames along rows (dimension :feature) and tN
 F = featureMatrix(F, Catch22.featureNames)
 ```
 """
-featureVector(F::Vector{Float64}, fNames::Vector{Symbol}) = DimArray(F, (Dim{:feature}(fNames),))
-featureMatrix(F::Array{Float64, 2}, fNames::Vector{Symbol}, tNames=1:size(F)[2]) = DimArray(F, (Dim{:feature}(fNames), Dim{:timeseries}(tNames)))
+featureVector(F::Vector, fNames::Vector{Symbol}) = DimArray(F, (Dim{:feature}(fNames),))
+featureMatrix(F::Array, fNames::Vector{Symbol}, tNames=1:size(F, 2)) = DimArray(F, (Dim{:feature}(fNames), Dim{:timeseries}(tNames)))
 
 
 """
