@@ -6,10 +6,11 @@ using Statistics
 
 include("features.jl")
 include("testdata.jl")
+include("feature_arrays.jl")
 
 catch22_jll.__init__() # Initialise the c-library
 
-zscore(𝐱::AbstractVector{Float64}) = (𝐱 .- Statistics.mean(𝐱))./(Statistics.std(𝐱))
+zscore(𝐱::AbstractVector) = (𝐱 .- Statistics.mean(𝐱))./(Statistics.std(𝐱))
 
 
 
@@ -25,11 +26,12 @@ Evaluate the feature 'fName' on the time series '𝐱'. If an array is supplied,
 catch22(𝐱, :DN_HistogramMode_5)
 ```
 """
-function catch22(𝐱::AbstractVector{Float64}, fName::Symbol)::Float64
+function catch22(𝐱::AbstractVector, fName::Symbol)::Float64
     if any(isinf.(𝐱)) || any(isnan.(𝐱))
         return NaN
     end
     𝐱 = zscore(𝐱)
+    𝐱 = convert(Vector{Float64}, 𝐱)
     fType = featureTypes[fName]
     if fType <: AbstractFloat
         ccall(dlsym(dlopen(ccatch22), fName), Cdouble, (Ptr{Array{Cdouble}},Cint), 𝐱, Int(size(𝐱, 1)))
@@ -69,10 +71,10 @@ X = randn(100, 10)
 F = catch22(X)
 ```
 """
-catch22(𝐱::AbstractVector{Float64}) = featureVector(catch22.((𝐱,), featureNames), featureNames)
-catch22(X::AbstractArray{Float64, 2}) = featureMatrix(mapslices(catch22, X, dims=[1]), featureNames)
-catch22(𝐱::AbstractVector{Float64}, fNames::Vector{Symbol}) = featureVector(catch22.((𝐱,), fNames), fNames)
-catch22(X::AbstractArray{Float64, 2}, fNames::Vector{Symbol}) = featureMatrix(mapslices(x->catch22(x, fNames), X, dims=[1]), fNames)
+catch22(𝐱::AbstractVector) = featureVector(catch22.((𝐱,), featureNames), featureNames)
+catch22(X::AbstractMatrix) = featureMatrix(mapslices(catch22, X, dims=[1]), featureNames)
+catch22(𝐱::AbstractVector, fNames::Vector{Symbol}) = featureVector(catch22.((𝐱,), fNames), fNames)
+catch22(X::AbstractMatrix, fNames::Vector{Symbol}) = featureMatrix(mapslices(x->catch22(x, fNames), X, dims=[1]), fNames)
 
 catch22(y, x) = catch22(x, y) # If you accidentally switch the inputs
 export catch22
@@ -89,14 +91,14 @@ An alternative to 'catch22(...)'; specific features (such as DN_HistogramMode_5)
 f = DN_HistogramMode_5(𝐱)
 ```
 """
-DN_HistogramMode_5(𝐱::AbstractVector{Float64}) = catch22(𝐱, :DN_HistogramMode_5)
+DN_HistogramMode_5(𝐱::AbstractVector) = catch22(𝐱, :DN_HistogramMode_5)
 # Do a feature manually for example
 export DN_HistogramMode_5
 
 # Then generate the rest
 for fName = featureNames[2:end]
     eval(quote
-        $fName(𝐱::AbstractVector{Float64}) = catch22(𝐱, $(Meta.quot(fName))); export $fName
+        $fName(𝐱::AbstractVector) = catch22(𝐱, $(Meta.quot(fName))); export $fName
     end)
 end
 
@@ -106,7 +108,7 @@ end
     Catch22.featureDims(𝐟::DimArray)
 Easily get the names of features represented in the feature vector or array 𝐟 (as a vector).
 """
-featureDims(𝐟::DimensionalData.DimArray) = dims(𝐟, :feature).val
+featureDims(𝐟::DimensionalData.AbstractDimArray) = dims(𝐟, :feature).val
 
 
 
