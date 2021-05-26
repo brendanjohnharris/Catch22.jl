@@ -6,7 +6,7 @@ using Statistics
 
 include("features.jl")
 include("testdata.jl")
-include("feature_arrays.jl")
+include("FeatureSet.jl")
 
 catch22_jll.__init__() # Initialise the c-library
 
