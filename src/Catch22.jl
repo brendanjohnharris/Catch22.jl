@@ -8,13 +8,11 @@ include("features.jl")
 include("testdata.jl")
 include("Feature.jl")
 include("FeatureSet.jl")
+include("FeatureArray.jl")
 
 catch22_jll.__init__() # Initialise the c-library
 
 zscore(𝐱::AbstractVector) = (𝐱 .- Statistics.mean(𝐱))./(Statistics.std(𝐱))
-
-
-
 
 """
     catch22(𝐱::AbstractArray{Float64}, fName::Symbol)
@@ -43,18 +41,6 @@ end
 function catch22(X::AbstractArray{Float64, 2}, fName::Symbol)::AbstractArray{Float64, 2}
     mapslices(𝐱 -> catch22(𝐱, fName), X, dims=[1])
 end
-
-"""
-    featureMatrix(F::Array, fNames::Vector{Symbol}, tNames)
-Construct a DimArray labelled with fNames along rows (dimension :feature) and tNames along columns (dimension :timeseries)
-
-# Examples
-```julia-repl
-F = featureMatrix(F, Catch22.featureNames)
-```
-"""
-featureVector(F::Vector, fNames::Vector{Symbol}) = DimArray(F, (Dim{:feature}(fNames),))
-featureMatrix(F::Array, fNames::Vector{Symbol}, tNames=1:size(F, 2)) = DimArray(F, (Dim{:feature}(fNames), Dim{:timeseries}(tNames)))
 
 
 """

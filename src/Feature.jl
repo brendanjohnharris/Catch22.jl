@@ -1,7 +1,7 @@
-import Base.:(==)
-import Base.show
+import Base.:(==), Base.show
 
 abstract type AbstractFeature <: Function end
+export AbstractFeature
 struct Feature <: AbstractFeature
     method::Function
     name::Symbol

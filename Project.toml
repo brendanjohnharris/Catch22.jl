@@ -13,8 +13,8 @@ StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
 catch22_jll = "8a07c0c5-99ad-56cb-bc82-72eed1bb61ce"
 
 [compat]
-DimensionalData = ">= 0.16"
-SafeTestsets = ">= 0.0.1"
+DimensionalData = "= 0.17"
+SafeTestsets = "= 0.0.1"
 julia = "1"
 
 [extras]
