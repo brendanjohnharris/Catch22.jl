@@ -21,39 +21,39 @@ FeatureSet( methods::Function,
 
 export FeatureSet
 
-getfeatures(𝒇::FeatureSet) = 𝒇.features
-getmethods(𝒇::FeatureSet)  = getmethod.(𝒇)
-getnames(𝒇::FeatureSet)  = getname.(𝒇)
-getkeywords(𝒇::FeatureSet)  = getkeywords.(𝒇)
-getdescriptions(𝒇::FeatureSet)  = getdescriptions.(𝒇)
+getfeatures(𝒇::AbstractFeatureSet) = 𝒇.features
+getmethods(𝒇::AbstractFeatureSet)  = getmethod.(𝒇)
+getnames(𝒇::AbstractFeatureSet)  = getname.(𝒇)
+getkeywords(𝒇::AbstractFeatureSet)  = getkeywords.(𝒇)
+getdescriptions(𝒇::AbstractFeatureSet)  = getdescriptions.(𝒇)
 export getfeatures, getmethods, getnames, getkeywords, getdescriptions
 
-size(𝒇::FeatureSet) = size(getfeatures(𝒇))
+size(𝒇::AbstractFeatureSet) = size(getfeatures(𝒇))
 
-getindex(𝒇::FeatureSet, i::Int) = getfeatures(𝒇)[i]
+getindex(𝒇::AbstractFeatureSet, i::Int) = getfeatures(𝒇)[i]
 
-function getindex(𝒇::FeatureSet, 𝐟::Vector{Symbol})
+function getindex(𝒇::AbstractFeatureSet, 𝐟::Vector{Symbol})
     i = [findfirst(x -> x == f, getnames(𝒇)) for f ∈ 𝐟]
     getindex(𝒇, i)
 end
 
-getindex(𝒇::FeatureSet, I) = getfeatures(𝒇)[I]
+getindex(𝒇::AbstractFeatureSet, I) = getfeatures(𝒇)[I]
 
-function getindex(𝒇::FeatureSet, f::Symbol)
+function getindex(𝒇::AbstractFeatureSet, f::Symbol)
     i = findfirst(x -> x == f, getnames(𝒇))
     getindex(𝒇, i)
 end
 
-function setindex!(𝒇::FeatureSet, f::Feature, i::Int)
+function setindex!(𝒇::AbstractFeatureSet, f::AbstractFeature, i::Int)
     setindex!(𝒇.features, f, i)
     ()
 end
 
-function Base.:+(𝒇::FeatureSet, 𝒇′::FeatureSet)
+function Base.:+(𝒇::AbstractFeatureSet, 𝒇′::AbstractFeatureSet)
     FeatureSet([vcat(g(𝒇), g(𝒇′)) for g ∈ [getfeatures, getnames, getkeywords, getdescriptions]]...)
 end
 
-Base.:\(𝒇::FeatureSet, 𝒇′::FeatureSet) = Base.setdiff(𝒇, 𝒇′)
+Base.:\(𝒇::AbstractFeatureSet, 𝒇′::AbstractFeatureSet) = Base.setdiff(𝒇, 𝒇′)
 
-(𝒇::FeatureSet)(x::AbstractVector) = FeatureVector([𝑓(x) for 𝑓 ∈ 𝒇])
-(𝒇::FeatureSet)(X::AbstractArray) = FeatureVector(mapslices(𝒇, X; dims=1))
+(𝒇::AbstractFeatureSet)(x::AbstractVector) = FeatureVector([𝑓(x) for 𝑓 ∈ 𝒇], 𝒇)
+(𝒇::AbstractFeatureSet)(X::AbstractArray) = FeatureVector(mapslices(𝒇, X; dims=1), 𝒇)

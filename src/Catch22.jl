@@ -89,15 +89,5 @@ for fName = featureNames[2:end]
     end)
 end
 
-
-
-"""
-    Catch22.featureDims(𝐟::DimArray)
-Easily get the names of features represented in the feature vector or array 𝐟 (as a vector).
-"""
-featureDims(𝐟::DimensionalData.AbstractDimArray) = dims(𝐟, :feature).val
-
-
-
 end
 

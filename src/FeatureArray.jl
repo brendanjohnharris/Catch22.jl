@@ -34,7 +34,6 @@ function FeatureArray(data::AbstractArray, features::Union{Tuple{Symbol}, Vector
 end
 
 dims(A::AbstractFeatureArray) = A.dims
-export dims
 refdims(A::AbstractFeatureArray) = A.refdims
 data(A::AbstractFeatureArray) = A.data
 name(A::AbstractFeatureArray) = A.name
@@ -42,8 +41,16 @@ metadata(A::AbstractFeatureArray) = A.metadata
 parent(A::AbstractFeatureArray) = data(A)
 Base.Array(A::AbstractFeatureArray) = Array(parent(A))
 
-@inline function rebuild(A::FeatureArray, data::AbstractArray, dims::Tuple, refdims::Tuple, name, metadata)
+@inline function rebuild(A::AbstractFeatureArray, data::AbstractArray, dims::Tuple, refdims::Tuple, name, metadata)
     FeatureArray(data, dims, refdims, name, metadata)
+end
+
+function getindex(A::AbstractFeatureArray, 𝑓::AbstractFeature, I...)
+    getindex(A, getname(𝑓), I...)
+end
+
+function getindex(A::AbstractFeatureArray, 𝒇::AbstractFeatureSet, I...)
+    getindex(A, getnames(𝒇), I...)
 end
 
 FeatureMatrix = FeatureArray{T, 2} where {T}
@@ -53,3 +60,13 @@ export FeatureMatrix
 FeatureVector = FeatureArray{T, 1} where {T}
 FeatureVector(args...) = FeatureArray(args...)
 export FeatureVector
+
+FeatureArray(X::AbstractArray, 𝒇::AbstractFeatureSet) = FeatureArray(X::AbstractArray, getnames(𝒇))
+
+
+"""
+    Catch22.featureDims(𝒇::FeatureArray)
+Get the names of features represented in the feature vector or array 𝒇 as a vector of symbols.
+"""
+featureDims(𝐟::DimensionalData.AbstractDimArray) = dims(𝐟, :feature).val
+featureDims(𝒇::AbstractFeatureArray) = getnames(𝒇)
