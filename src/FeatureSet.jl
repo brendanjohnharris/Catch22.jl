@@ -60,3 +60,4 @@ Base.:\(𝒇::AbstractFeatureSet, 𝒇′::AbstractFeatureSet) = Base.setdiff(�
 
 (𝒇::AbstractFeatureSet)(x::AbstractVector) = FeatureVector([𝑓(x) for 𝑓 ∈ 𝒇], 𝒇)
 (𝒇::AbstractFeatureSet)(X::AbstractArray) = FeatureMatrix(mapslices(𝒇, X; dims=1), 𝒇)
+(𝒇::AbstractFeatureSet)(x, f::Symbol) = 𝒇[f](x)

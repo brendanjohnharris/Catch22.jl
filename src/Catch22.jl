@@ -39,7 +39,7 @@ function _catch22(𝐱::AbstractVector, fName::Symbol)::Float64
     end
 end
 function _catch22(X::AbstractArray{Float64, 2}, fName::Symbol)::AbstractArray{Float64, 2}
-    mapslices(𝐱 -> catch22(𝐱, fName), X, dims=[1])
+    mapslices(𝐱 -> _catch22(𝐱, fName), X, dims=[1])
 end
 
 
