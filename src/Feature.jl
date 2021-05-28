@@ -23,5 +23,7 @@ export getmethod, getname, getkeywords, getdescription
 
 Base.:(==)(𝑓::AbstractFeature, 𝑓′::AbstractFeature) = isequal(getname(𝑓), getname(𝑓′)) # We assume that any features with the same name are the same feature
 
-Base.show(io::IO, 𝑓::AbstractFeature) = print(io, ":"*string(getname(𝑓)))
-Base.show(io::IO, m::MIME"text/plain", 𝑓::AbstractFeature) = printstyled(io, ":"*string(getname(𝑓)), color=:light_blue)
+formatshort(𝑓::AbstractFeature) = ":"*string(getname(𝑓))*" "
+Base.show(𝑓::AbstractFeature) = print(formatshort(𝑓))
+Base.show(io::IO, 𝑓::AbstractFeature) = print(io, formatshort(𝑓))
+Base.show(io::IO, m::MIME"text/plain", 𝑓::AbstractFeature) = printstyled(io, formatshort(𝑓), color=:light_blue)

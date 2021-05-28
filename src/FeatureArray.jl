@@ -69,5 +69,6 @@ FeatureArray(X::AbstractArray, 𝒇::AbstractFeatureSet) = FeatureArray(X::Abstr
     Catch22.featureDims(𝒇::FeatureArray)
 Get the names of features represented in the feature vector or array 𝒇 as a vector of symbols.
 """
-featureDims(𝐟::DimensionalData.AbstractDimArray) = dims(𝐟, :feature).val
-featureDims(𝒇::AbstractFeatureArray) = getnames(𝒇)
+featureDims(A::DimensionalData.AbstractDimArray) = dims(A, :feature).val
+getnames(A::AbstractFeatureArray) = featureDims(A)
+export getnames

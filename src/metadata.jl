@@ -71,7 +71,7 @@ const featuretypes = Dict(featurenames .=> [
 
 """
     Catch22.featurekeywords
-A dictionary listing keywords of features as vectors of strings.
+A vector listing keywords of features as vectors of strings.
 """
 const featurekeywords = [  # See catch22 paper
                                     #DN_HistogramMode_5
@@ -121,7 +121,7 @@ const featurekeywords = [  # See catch22 paper
 
 """
     Catch22.featuredescriptions
-A dictionary listing short descriptions of each feature, as strings.
+A vector listing short descriptions of each feature, as strings.
 """
 const featuredescriptions = [  # See catch22 paper
                                     #DN_HistogramMode_5

@@ -18,7 +18,7 @@ using Catch22
 ## Input time series
 The input time series can be provided as a Vector{Float64} or Array{Float64, 2}. If an array is provided, the time series must occupy its _columns_. For example, this package contains a few test time series from [_catch22_](https://www.github.com/chlubba/catch22):
 ```Julia
-𝐱 = Catch22.testData[:testSinusoid] # a Vector{Float64}
+𝐱 = Catch22.testdata[:testSinusoid] # a Vector{Float64}
 X = randn(1000, 10) # an Array{Float64, 2} with 10 time series
 ```
 
