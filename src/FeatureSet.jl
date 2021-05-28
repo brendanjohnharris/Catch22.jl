@@ -1,21 +1,21 @@
-using StatsBase
 import Base.size, Base.getindex, Base.setindex!, Base.:+
 
 abstract type AbstractFeatureSet <: AbstractVector{Function} end
 export AbstractFeatureSet
 struct FeatureSet <: AbstractFeatureSet
     features::Vector{AbstractFeature}
+    FeatureSet(features::Vector{T}) where {T <: AbstractFeature} = new(features)
 end
 
-FeatureSet( methods::AbstractArray{Function},
+FeatureSet( methods::AbstractArray,
             names=Symbol.(methods),
-            keywords=fill("", length(methods)),
+            keywords=fill([], length(methods)),
             descriptions=fill("", length(methods))) =
             FeatureSet(Feature.(methods, names, keywords, descriptions))
 
 FeatureSet( methods::Function,
             names=Symbol(methods),
-            keywords="",
+            keywords=[],
             descriptions="") =
             FeatureSet([Feature(methods, names, keywords, descriptions)])
 
@@ -50,7 +50,10 @@ function setindex!(𝒇::AbstractFeatureSet, f::AbstractFeature, i::Int)
 end
 
 function Base.:+(𝒇::AbstractFeatureSet, 𝒇′::AbstractFeatureSet)
-    FeatureSet([vcat(g(𝒇), g(𝒇′)) for g ∈ [getfeatures, getnames, getkeywords, getdescriptions]]...)
+    FeatureSet([vcat(g(𝒇), g(𝒇′)) for g ∈ [ getfeatures,
+                                            getnames,
+                                            getkeywords,
+                                            getdescriptions]]...)
 end
 
 Base.:\(𝒇::AbstractFeatureSet, 𝒇′::AbstractFeatureSet) = Base.setdiff(𝒇, 𝒇′)

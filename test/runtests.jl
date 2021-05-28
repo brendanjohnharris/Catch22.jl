@@ -5,7 +5,7 @@ using SafeTestsets
 # ------------------------------------------------------------------------------------------------ #
 @safetestset "Catch22" begin
 using Catch22
-import Catch22.featureNames, Catch22.testData, Catch22.testOutput, Catch22.testNames
+import Catch22.featurenames, Catch22.testData, Catch22.testOutput, Catch22.testNames
 using Test
 
 function isnearlyequalorallnan(a::AbstractArray, b::AbstractArray) # Must be a nicer way
@@ -18,12 +18,12 @@ function isnearlyequalorallnan(a::Real, b::Real)
 end
 # ----------------------------------- Test features one by one ----------------------------------- #
 println("Testing individual features")
-fs = catch22.(featureNames, (testData[:test],))
+fs = catch22.(featurenames, (testData[:test],))
 arbIdx = 1
-@testset "Features $f" for f in featureNames
+@testset "Features $f" for f in featurenames
         @test isnearlyequalorallnan(fs[arbIdx], testOutput[:test][arbIdx])
         arbIdx += 1
-        # Assumes the test outputs are written in the same order as featureNames
+        # Assumes the test outputs are written in the same order as featurenames
 end
 
 

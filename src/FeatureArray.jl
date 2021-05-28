@@ -54,15 +54,16 @@ function getindex(A::AbstractFeatureArray, 𝒇::AbstractFeatureSet, I...)
 end
 
 FeatureMatrix = FeatureArray{T, 2} where {T}
-FeatureMatrix(args...) = FeatureArray(args...)
-export FeatureMatrix
+featureMatrix = FeatureMatrix
+export FeatureMatrix, featureMatrix
 
 FeatureVector = FeatureArray{T, 1} where {T}
-FeatureVector(args...) = FeatureArray(args...)
-export FeatureVector
+featureVector = FeatureVector
+export FeatureVector, featureVector
 
 FeatureArray(X::AbstractArray, 𝒇::AbstractFeatureSet) = FeatureArray(X::AbstractArray, getnames(𝒇))
 
+(FeatureArray{T,N} where T)(x::AbstractArray{S,N}, 𝒇) where {S,N} = FeatureArray(x, 𝒇)
 
 """
     Catch22.featureDims(𝒇::FeatureArray)

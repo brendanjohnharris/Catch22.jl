@@ -5,7 +5,7 @@ export AbstractFeature
 struct Feature <: AbstractFeature
     method::Function
     name::Symbol
-    keywords::String
+    keywords::Vector{String}
     description::String
     Feature(method::Function, name=Symbol(method), keywords="", description="") = new(method, name, keywords, description)
 end
