@@ -22,7 +22,7 @@ const featurenames = [
     :SB_TransitionMatrix_3ac_sumdiagcov
     :PD_PeriodicityWang_th0_01]
 
-# So it turns out that not all of these c features return doubles... Had to manually check the header files
+
 const featuretypes = Dict(featurenames .=> [
                                     #DN_HistogramMode_5
                                     Cdouble
@@ -69,55 +69,57 @@ const featuretypes = Dict(featurenames .=> [
                                     #PD_PeriodicityWang_th0_01
                                     Cint])
 
+
 """
     Catch22.featurekeywords
 A vector listing keywords of features as vectors of strings.
 """
-const featurekeywords = [  # See catch22 paper
+const featurekeywords = [ # See hctsa
                                     #DN_HistogramMode_5
-                                    ["Mode of z-scored distribution (5-bin histogram)"],
+                                    ["distribution", "location"],
                                     #DN_HistogramMode_10
-                                    ["Mode of z-scored distribution (10-bin histogram)"],
+                                    ["distribution", "location"],
                                     #CO_Embed2_Dist_tau_d_expfit_meandiff
-                                    ["Exponential fit to successive distances in 2-d embedding space"],
+                                    ["correlation", "embedding"],
                                     #CO_f1ecac
-                                    ["First 1/𝑒 crossing of autocorrelation function"],
+                                    ["correlation", "timescale"],
                                     #CO_FirstMin_ac
-                                    ["First minimum of autocorrelation function"],
+                                    ["correlation", "timescale"],
                                     #CO_HistogramAMI_even_2_5
-                                    ["Automutual information, 𝑚=2,𝜏=5"],
+                                    ["information", "correlation", "AMI"],
                                     #CO_trev_1_num
-                                    ["Time-reversibility statistic, ⟨(𝑥ₜ₊₁−𝑥ₜ)³⟩ₜ"],
+                                    ["correlation", "nonlinear"],
                                     #DN_OutlierInclude_p_001_mdrmd
-                                    ["Time intervals between successive extreme events above the mean"],
+                                    ["distribution", "outliers"],
                                     #DN_OutlierInclude_n_001_mdrmd
-                                    ["Time intervals between successive extreme events below the mean"],
+                                    ["distribution", "outliers"],
                                     #FC_LocalSimple_mean1_tauresrat
-                                    ["Change in correlation length after iterative differencing"],
+                                    ["forecasting"],
                                     #FC_LocalSimple_mean3_stderr
-                                    ["Mean error from a rolling 3-sample mean forecasting"],
+                                    ["forecasting"],
                                     #IN_AutoMutualInfoStats_40_gaussian_fmmi
-                                    ["First minimum of the automutual information function"],
+                                    ["information", "correlation", "AMI"],
                                     #MD_hrv_classic_pnn40
-                                    ["Proportion of successive differences exceeding 0.04𝜎 (Mietus 2002)"],
+                                    ["medical"],
                                     #SB_BinaryStats_diff_longstretch0
-                                    ["Longest period of successive incremental decreases"],
+                                    ["distribution", "stationarity"],
                                     #SB_BinaryStats_mean_longstretch1
-                                    ["Longest period of consecutive values above the mean"],
+                                    ["distribution", "stationarity"],
                                     #SB_MotifThree_quantile_hh
-                                    ["Shannon entropy of two successive letters in equiprobable 3-letter symbolization"],
+                                    ["symbolic", "motifs"],
                                     #SC_FluctAnal_2_rsrangefit_50_1_logi_prop_r1
-                                    ["Proportion of slower timescale fluctuations that scale with linearly rescaled range fits"],
+                                    ["scaling"],
                                     #SC_FluctAnal_2_dfa_50_1_2_logi_prop_r1
-                                    ["Proportion of slower timescale fluctuations that scale with DFA (50% sampling)"],
+                                    ["scaling"],
                                     #SP_Summaries_welch_rect_area_5_1
-                                    ["Total power in lowest fifth of frequencies in the Fourier power spectrum"],
+                                    ["FourierSpectrum"],
                                     #SP_Summaries_welch_rect_centroid
-                                    ["Centroid of the Fourier power spectrum"],
+                                    ["FourierSpectrum"],
                                     #SB_TransitionMatrix_3ac_sumdiagcov
-                                    ["Trace of covariance of transition matrix between symbols in 3-letter alphabet"],
+                                    ["symbolic", "transitionmat"],
                                     #PD_PeriodicityWang_th0_01
-                                    ["Periodicity measure of (Wang et al. 2007)"]]
+                                    ["periodicity", "spline"]]
+
 
 """
     Catch22.featuredescriptions

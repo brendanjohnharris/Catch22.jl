@@ -85,4 +85,3 @@ f = DN_HistogramMode_5(𝐱)
 DN_HistogramMode_5;
 
 end
-
