@@ -1,4 +1,4 @@
-import Base.size, Base.getindex, Base.setindex!, Base.:+
+import Base.size, Base.getindex, Base.setindex!, Base.similar, Base.eltype, Base.deleteat!, Base.filter, Base.:+
 
 abstract type AbstractFeatureSet <: AbstractVector{Function} end
 export AbstractFeatureSet
@@ -24,10 +24,10 @@ F = 𝒇(X)
 𝒈₁ = 𝒇 + 𝒇₁
 G = 𝒈₁(X)
 
-# Intersecting feature sets, where feature names are used exclusively to identify features
+# Intersecting feature sets, where feature are identified exclusively by their names
 𝒇₂ = FeatureSet(x->prod, :sum, ["distributions"], "∏x")
-𝒈₂ = 𝒇 ∪ 𝒇₂
-G = 𝒈₂(X)
+𝒈₂ = 𝒇 ∩ 𝒇₂ # The intersection of two feature sets, both with their own :sum
+G = 𝒈₂(X) # The intersection contains the :sum of the first argument to ∩; 𝒇
 ```
 """
 struct FeatureSet <: AbstractFeatureSet
@@ -61,23 +61,35 @@ export getfeatures, getmethods, getnames, getkeywords, getdescriptions
 size(𝒇::AbstractFeatureSet) = size(getfeatures(𝒇))
 
 getindex(𝒇::AbstractFeatureSet, i::Int) = getfeatures(𝒇)[i]
+getindex(𝒇::AbstractFeatureSet, I) = FeatureSet(getfeatures(𝒇)[I])
 
 function getindex(𝒇::AbstractFeatureSet, 𝐟::Vector{Symbol})
     i = [findfirst(x -> x == f, getnames(𝒇)) for f ∈ 𝐟]
     getindex(𝒇, i)
 end
 
-getindex(𝒇::AbstractFeatureSet, I) = getfeatures(𝒇)[I]
-
 function getindex(𝒇::AbstractFeatureSet, f::Symbol)
     i = findfirst(x -> x == f, getnames(𝒇))
     getindex(𝒇, i)
 end
 
-function setindex!(𝒇::AbstractFeatureSet, f::AbstractFeature, i::Int)
+function setindex!(𝒇::AbstractFeatureSet, f, i::Int)
     setindex!(𝒇.features, f, i)
     ()
 end
+
+IndexStyle(::AbstractFeatureSet) = IndexLinear()
+eltype(::AbstractFeatureSet) = AbstractFeature
+
+function Base.similar(::AbstractFeatureSet, ::Type{S}, dims::Dims) where {S}
+    FeatureSet(Vector{AbstractFeature}(undef, dims[1]))
+end
+
+function Base.deleteat!(𝒇::AbstractFeatureSet, args...)
+    deleteat!(𝒇.features, args...)
+end
+
+Base.filter(f, 𝒇::AbstractFeatureSet) = FeatureSet(Base.filter(f, getfeatures(𝒇)))
 
 function Base.:+(𝒇::AbstractFeatureSet, 𝒇′::AbstractFeatureSet)
     FeatureSet([vcat(g(𝒇), g(𝒇′)) for g ∈ [ getfeatures,
