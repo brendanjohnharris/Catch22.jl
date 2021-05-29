@@ -19,9 +19,9 @@ end
 
 # ----------------------------------- Test features one by one ----------------------------------- #
 println("Testing individual features")
-@testset "Features $(getname(f))" for f ∈ catch22
+@testset "Feature $(getname(f))" for f ∈ catch22
         @test isnearlyequalorallnan(f(testdata[:test]), testoutput[:test][f])
-end
+end;
 
 
 # ------------------------- Test catch22, time series by time series ------------------------- #
@@ -32,9 +32,9 @@ function testFeatures(t::Symbol)
     ff = testoutput[t]
     isnearlyequalorallnan(Array(f), ff)
 end
-@testset "Datasets $f" for f in testnames
+@testset "Dataset $f" for f in testnames
     @test testFeatures(f)
-end
+end;
 
 
 
@@ -46,6 +46,24 @@ X = randn(1000, 100)
     @test_nowarn begin
         @time typeof(catch22(X)) <: FeatureMatrix
     end
+end;
+
+
+
+# ---------------------------------- Test FeatureSet operations ---------------------------------- #
+println("Testing FeatureSet operations")
+
+@testset "FeatureSet" begin
+    𝒇₁ = FeatureSet([sum, length], [:sum, :length], [["distribution"], ["sampling"]], ["∑x¹", "∑x⁰"])
+    𝒇₂ = catch22[1:2]
+    X = randn(100, 2)
+    𝒇₃ = 𝒇₁ + 𝒇₂
+    @test_nowarn 𝒇₁(X)
+    @test_nowarn 𝒇₃(X)
+    @test_nowarn getnames(𝒇₃) == [:sum, :length , :DN_HistogramMode_5, :DN_HistogramMode_10]
+    @test_nowarn 𝒇₁ == 𝒇₃ \ 𝒇₂ == setdiff(𝒇₃, 𝒇₂)
+    @test_nowarn 𝒇₃ == 𝒇₁ ∪ 𝒇₂
+    @test_nowarn 𝒇₂ == 𝒇₃ ∩ 𝒇₂
 end;
 
 end
