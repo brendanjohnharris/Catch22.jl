@@ -2,113 +2,86 @@ module Catch22
 using catch22_jll
 using DimensionalData
 using Libdl
-using Statistics
+import Statistics.mean, Statistics.std
 
-include("features.jl")
+include("Feature.jl")
+include("FeatureSet.jl")
+include("FeatureArray.jl")
+include("metadata.jl")
 include("testdata.jl")
 
 catch22_jll.__init__() # Initialise the c-library
 
-zscore(𝐱::AbstractVector{Float64}) = (𝐱 .- Statistics.mean(𝐱))./(Statistics.std(𝐱))
-
-
-
+zscore(𝐱::AbstractVector) = (𝐱 .- mean(𝐱))./(std(𝐱))
 
 """
-    catch22(𝐱::AbstractArray{Float64}, fName::Symbol)
-    catch22(fName::Symbol, 𝐱::AbstractArray{Float64})
-Evaluate the feature 'fName' on the time series '𝐱'. If an array is supplied, features are calculated for its columns and returned as a Vector. See Catch22.features for a summary of the 22 available time series features.
+    _catch22(𝐱::AbstractArray{Float64}, fName::Symbol)
+    _catch22(fName::Symbol, 𝐱::AbstractArray{Float64})
+Evaluate the feature `fName` on the time series `𝐱`. If an array is supplied, features are calculated for its columns and returned as a Vector. See `Catch22.featuredescriptions` for a summary of the 22 available time series features.
 
 # Examples
 ```julia-repl
-𝐱 = Catch22.testData[:test]
-catch22(𝐱, :DN_HistogramMode_5)
+𝐱 = Catch22.testdata[:test]
+Catch22._catch22(𝐱, :DN_HistogramMode_5)
 ```
 """
-function catch22(𝐱::AbstractVector{Float64}, fName::Symbol)::Float64
+function _catch22(𝐱::AbstractVector, fName::Symbol)::Float64
     if any(isinf.(𝐱)) || any(isnan.(𝐱))
         return NaN
     end
     𝐱 = zscore(𝐱)
-    fType = featureTypes[fName]
+    𝐱 = convert(Vector{Float64}, 𝐱)
+    fType = featuretypes[fName]
     if fType <: AbstractFloat
         ccall(dlsym(dlopen(ccatch22), fName), Cdouble, (Ptr{Array{Cdouble}},Cint), 𝐱, Int(size(𝐱, 1)))
     elseif fType <: Integer
         ccall(dlsym(dlopen(ccatch22), fName), Cint, (Ptr{Array{Cdouble}},Cint), 𝐱, Int(size(𝐱, 1)))
     end
 end
-function catch22(X::AbstractArray{Float64, 2}, fName::Symbol)::AbstractArray{Float64, 2}
-    mapslices(𝐱 -> catch22(𝐱, fName), X, dims=[1])
+function _catch22(X::AbstractArray{Float64, 2}, fName::Symbol)::AbstractArray{Float64, 2}
+    mapslices(𝐱 -> _catch22(𝐱, fName), X, dims=[1])
 end
-
-"""
-    featureMatrix(F::Array, fNames::Vector{Symbol}, tNames)
-Construct a DimArray labelled with fNames along rows (dimension :feature) and tNames along columns (dimension :timeseries)
-
-# Examples
-```julia-repl
-F = featureMatrix(F, Catch22.featureNames)
-```
-"""
-featureVector(F::Vector, fNames::Vector{Symbol}) = DimArray(F, (Dim{:feature}(fNames),))
-featureMatrix(F::Array, fNames::Vector{Symbol}, tNames=1:size(F, 2)) = DimArray(F, (Dim{:feature}(fNames), Dim{:timeseries}(tNames)))
 
 
 """
     catch22(𝐱::Vector)
     catch22(X::Array)
-Evaluate all features for a time series vector or the columns of an array.
-Features are returned in a Dimensional Array, where array rows are annotated by feature names.
+    catch22[featurename::Symbol](X::Array)
+Evaluate all features for a time series vector `𝐱` or the columns of an array `X`.
+`catch22` is a FeatureSet, which means it can be indexed by feature names (as symbols) to return a subset of the available features.
+`getnames(catch22)`, `getkeywords(catch22)` and `getdescriptions(catch22)`` will also return feature names, keywords and descriptions respectively.
+Features are returned in a `FeatureArray`, in which array rows are annotated by feature names. A `FeatureArray` can be converted to a regular array with `Array(F)`.
 
 # Examples
 ```julia-repl
-𝐱 = Catch22.testData[:test]
+𝐱 = Catch22.testdata[:test]
 𝐟 = catch22(𝐱)
 
 X = randn(100, 10)
 F = catch22(X)
+F = catch22[:DN_HistogramMode_5](X)
 ```
 """
-catch22(𝐱::AbstractVector{Float64}) = featureVector(catch22.((𝐱,), featureNames), featureNames)
-catch22(X::AbstractArray{Float64, 2}) = featureMatrix(mapslices(catch22, X, dims=[1]), featureNames)
-catch22(𝐱::AbstractVector{Float64}, fNames::Vector{Symbol}) = featureVector(catch22.((𝐱,), fNames), fNames)
-catch22(X::AbstractArray{Float64, 2}, fNames::Vector{Symbol}) = featureMatrix(mapslices(x->catch22(x, fNames), X, dims=[1]), fNames)
-
-catch22(y, x) = catch22(x, y) # If you accidentally switch the inputs
+catch22 = FeatureSet([(x -> _catch22(x, f)) for f ∈ featurenames], featurenames, featurekeywords, featuredescriptions)
 export catch22
 
 
-
-"""
-    DN_HistogramMode_5(x::AbstractVector{Union{Float64, Int}}) # For example
-An alternative to 'catch22(...)'; specific features (such as DN_HistogramMode_5) can be evaluated with functions called by their names.
-
-# Examples
-```julia-repl
-𝐱 = Catch22.testData[:test]
-f = DN_HistogramMode_5(𝐱)
-```
-"""
-DN_HistogramMode_5(𝐱::AbstractVector{Float64}) = catch22(𝐱, :DN_HistogramMode_5)
-# Do a feature manually for example
-export DN_HistogramMode_5
-
-# Then generate the rest
-for fName = featureNames[2:end]
+for f = featurenames
     eval(quote
-        $fName(𝐱::AbstractVector{Float64}) = catch22(𝐱, $(Meta.quot(fName))); export $fName
+        $f = catch22[$(Meta.quot(f))]; export $f
     end)
 end
 
-
-
 """
-    Catch22.featureDims(𝐟::DimArray)
-Easily get the names of features represented in the feature vector or array 𝐟 (as a vector).
+    DN_HistogramMode_5(x::AbstractVector{Union{Float64, Int}}) # For example
+An alternative to `catch22(...)``. All features, such as `DN_HistogramMode_5`, are exported as Features and can be evaluated by calling their names.
+
+# Examples
+```julia-repl
+𝐱 = Catch22.testdata[:test]
+f = DN_HistogramMode_5(𝐱)
+```
 """
-featureDims(𝐟::DimensionalData.DimArray) = dims(𝐟, :feature).val
-
-
+DN_HistogramMode_5;
 
 end
-

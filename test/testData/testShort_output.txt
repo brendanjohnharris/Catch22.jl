@@ -1,4 +1,4 @@
-# Generated using catch22 in Matlab. Note that the output has been reordered to match featureNames
+# Generated using catch22 in Matlab. Note that the output has been reordered to match featurenames
 0.0226994949580501
 0.0226994949580502
 0.511525031317902

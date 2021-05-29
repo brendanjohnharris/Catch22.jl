@@ -1,4 +1,4 @@
-const featureNames = [
+const featurenames = [
     :DN_HistogramMode_5 # These shouldn't change between versions of catch22
     :DN_HistogramMode_10
     :CO_Embed2_Dist_tau_d_expfit_meandiff
@@ -22,8 +22,8 @@ const featureNames = [
     :SB_TransitionMatrix_3ac_sumdiagcov
     :PD_PeriodicityWang_th0_01]
 
-# So it turns out that not all of these c features return doubles... Had to manually check the header files
-const featureTypes = Dict(featureNames .=> [
+
+const featuretypes = Dict(featurenames .=> [
                                     #DN_HistogramMode_5
                                     Cdouble
                                     #DN_HistogramMode_10
@@ -69,11 +69,63 @@ const featureTypes = Dict(featureNames .=> [
                                     #PD_PeriodicityWang_th0_01
                                     Cint])
 
+
 """
-    Catch22.features
-A dictionary listing feature names, as symbols, and short descriptions, as strings.
+    Catch22.featurekeywords
+A vector listing keywords of features as vectors of strings.
 """
-const features = Dict(featureNames .=> [  # See catch22 paper
+const featurekeywords = [ # See hctsa
+                                    #DN_HistogramMode_5
+                                    ["distribution", "location"],
+                                    #DN_HistogramMode_10
+                                    ["distribution", "location"],
+                                    #CO_Embed2_Dist_tau_d_expfit_meandiff
+                                    ["correlation", "embedding"],
+                                    #CO_f1ecac
+                                    ["correlation", "timescale"],
+                                    #CO_FirstMin_ac
+                                    ["correlation", "timescale"],
+                                    #CO_HistogramAMI_even_2_5
+                                    ["information", "correlation", "AMI"],
+                                    #CO_trev_1_num
+                                    ["correlation", "nonlinear"],
+                                    #DN_OutlierInclude_p_001_mdrmd
+                                    ["distribution", "outliers"],
+                                    #DN_OutlierInclude_n_001_mdrmd
+                                    ["distribution", "outliers"],
+                                    #FC_LocalSimple_mean1_tauresrat
+                                    ["forecasting"],
+                                    #FC_LocalSimple_mean3_stderr
+                                    ["forecasting"],
+                                    #IN_AutoMutualInfoStats_40_gaussian_fmmi
+                                    ["information", "correlation", "AMI"],
+                                    #MD_hrv_classic_pnn40
+                                    ["medical"],
+                                    #SB_BinaryStats_diff_longstretch0
+                                    ["distribution", "stationarity"],
+                                    #SB_BinaryStats_mean_longstretch1
+                                    ["distribution", "stationarity"],
+                                    #SB_MotifThree_quantile_hh
+                                    ["symbolic", "motifs"],
+                                    #SC_FluctAnal_2_rsrangefit_50_1_logi_prop_r1
+                                    ["scaling"],
+                                    #SC_FluctAnal_2_dfa_50_1_2_logi_prop_r1
+                                    ["scaling"],
+                                    #SP_Summaries_welch_rect_area_5_1
+                                    ["FourierSpectrum"],
+                                    #SP_Summaries_welch_rect_centroid
+                                    ["FourierSpectrum"],
+                                    #SB_TransitionMatrix_3ac_sumdiagcov
+                                    ["symbolic", "transitionmat"],
+                                    #PD_PeriodicityWang_th0_01
+                                    ["periodicity", "spline"]]
+
+
+"""
+    Catch22.featuredescriptions
+A vector listing short descriptions of each feature, as strings.
+"""
+const featuredescriptions = [  # See catch22 paper
                                     #DN_HistogramMode_5
                                     "Mode of z-scored distribution (5-bin histogram)"
                                     #DN_HistogramMode_10
@@ -117,4 +169,4 @@ const features = Dict(featureNames .=> [  # See catch22 paper
                                     #SB_TransitionMatrix_3ac_sumdiagcov
                                     "Trace of covariance of transition matrix between symbols in 3-letter alphabet"
                                     #PD_PeriodicityWang_th0_01
-                                    "Periodicity measure of (Wang et al. 2007)"])
+                                    "Periodicity measure of (Wang et al. 2007)"]

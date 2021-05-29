@@ -17,4 +17,4 @@ idxs = Clustering.hclust(Df; linkage=:average, branchorder=:optimal).order
 
 p2 = plot(Df[idxs, idxs], seriestype = :heatmap, aspect_ratio=:equal, xaxis=nothing)
 
-plot!(yticks=(1:size(Df, 1), replace.(string.(Catch22.featureNames[idxs]), '_'=>"\\_")), size=(800, 400), xlims=[0.5, size(Df, 1)+0.5], ylims=[0.5, size(Df, 1)+0.5], box=:on, colorbar_title="1-|ρ|", clims=(0.0, 1.0))
+plot!(yticks=(1:size(Df, 1), replace.(string.(Catch22.featurenames[idxs]), '_'=>"\\_")), size=(800, 400), xlims=[0.5, size(Df, 1)+0.5], ylims=[0.5, size(Df, 1)+0.5], box=:on, colorbar_title="1-|ρ|", clims=(0.0, 1.0))

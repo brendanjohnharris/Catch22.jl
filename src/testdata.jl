@@ -1,6 +1,6 @@
 using DelimitedFiles
 
-testNames = [
+const testnames = [
     :test
     :test2
     :testInf
@@ -10,9 +10,8 @@ testNames = [
     :testSinusoid
 ]
 
-# -------------------------------- Load test timeseries into dict -------------------------------- #
-testData = Dict(testNames .=> map(x -> reduce(vcat, readdlm(normpath(joinpath(@__DIR__, "../test/testData", String(x)*".txt")), ' ', Float64, '\n')), testNames))
+loaddata(x) = reduce(vcat, readdlm(normpath(joinpath(@__DIR__, "../test/testData", String(x)*".txt")), ' ', Float64, '\n'))
+loadoutput(x) =  FeatureVector(reduce(vcat, readdlm(normpath(joinpath(@__DIR__, "../test/testData", String(x)*"_output.txt")), ' ', Float64, '\n', comments=true)), featurenames)
 
-
-# ---------------------------- Load expected feature outputs into dict --------------------------- #
-testOutput = Dict(testNames .=> map(x -> reduce(vcat, readdlm(normpath(joinpath(@__DIR__, "../test/testData", String(x)*"_output.txt")), ' ', Float64, '\n', comments=true)), testNames))
+const testdata = Dict(testnames .=> map(loaddata, testnames))
+const testoutput = Dict(testnames .=> map(loadoutput, testnames))
