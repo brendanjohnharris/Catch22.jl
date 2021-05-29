@@ -5,6 +5,20 @@ import Base.Array
 abstract type AbstractFeatureArray{T,N,D,A} <: AbstractDimArray{T,N,D,A} end
 export AbstractFeatureArray
 
+
+"""
+    F = FeatureArray(data::AbstractArray, features::Union{Tuple{Symbol},Vector{Symbol}}, [timeseries::Union{Vector, Tuple}], args...)
+
+Construct a `FeatureArray`, which annotates the array `data` with names of `features` along rows and, optionally, `timeseries` along columns.
+Since `FeatureArray <: AbstractFeatureArray <: AbstractDimArray`, further arguments to the `FeatureArray` constructor are passed to the `DimArray` constructor.
+To access feature names, use `getnames(F)`.
+
+# Examples
+```julia-repl
+data = rand(Int, 2, 10) # Some feature matrix with 2 features and 10 timeseries
+F = FeatureArray(data, [:sum, :length])
+```
+"""
 struct FeatureArray{T,N,D<:Tuple,R<:Tuple,A<:AbstractArray{T,N},Na,Me} <: AbstractFeatureArray{T,N,D,A}
     data::A
     dims::D
@@ -53,22 +67,48 @@ function getindex(A::AbstractFeatureArray, 𝒇::AbstractFeatureSet, I...)
     getindex(A, getnames(𝒇), I...)
 end
 
+
+"""
+    FeatureArray{T, 2} where {T}
+
+An alias to construct a `FeatureArray` for a flat set of timeseries.
+
+# Examples
+```julia-repl
+data = rand(Int, 2, 3) # Some feature matrix with 2 features and 3 timeseries
+F = FeatureMatrix(data, [:sum, :length], [1, 2, 3])
+```
+"""
 FeatureMatrix = FeatureArray{T, 2} where {T}
 featureMatrix = FeatureMatrix
 export FeatureMatrix, featureMatrix
 
+
+"""
+    FeatureArray{T, 1} where {T}
+
+An alias to construct a `FeatureArray` for a single time series.
+
+# Examples
+```julia-repl
+data = randn(2) # Feature values for 1 time series
+𝐟 = FeatureVector(data, [:sum, :length])
+```
+"""
 FeatureVector = FeatureArray{T, 1} where {T}
 featureVector = FeatureVector
 export FeatureVector, featureVector
 
 FeatureArray(X::AbstractArray, 𝒇::AbstractFeatureSet) = FeatureArray(X::AbstractArray, getnames(𝒇))
 
-(FeatureArray{T,N} where T)(x::AbstractArray{S,N}, 𝒇) where {S,N} = FeatureArray(x, 𝒇)
+(FeatureArray{T,N} where {T})(x::AbstractArray{S,N}, args...) where {S,N} = FeatureArray(x, args...)
 
 """
-    Catch22.featureDims(𝒇::FeatureArray)
+    getnames(𝒇::FeatureArray)
 Get the names of features represented in the feature vector or array 𝒇 as a vector of symbols.
 """
 featureDims(A::DimensionalData.AbstractDimArray) = dims(A, :feature).val
 getnames(A::AbstractFeatureArray) = featureDims(A)
 export getnames
+
+timeseriesDims(A::DimensionalData.AbstractDimArray) = dims(A, :timeseries).val

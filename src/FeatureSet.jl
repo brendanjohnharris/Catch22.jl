@@ -2,12 +2,40 @@ import Base.size, Base.getindex, Base.setindex!, Base.:+
 
 abstract type AbstractFeatureSet <: AbstractVector{Function} end
 export AbstractFeatureSet
+
+"""
+    FeatureSet(methods, [names, keywords, descriptions])
+    FeatureSet(features::Vector{T}) where {T <: AbstractFeature}
+
+Construct a `FeatureSet` from `methods` (a vector of functions) and optionally provide `names` as a vector of symbols, `keywords` as a vector of vectors of strings and `descriptions` as a vector of strings.
+A `FeatureSet` can be called on time series vector or matrix `X` (with time series occupying columns) to return a `FeatureArray` of feature values.
+Subsets of a `FeatureSet` `𝒇` can be obtained by indexing with feature names as symbols.
+`FeatureSet`s also support set operations defined for arrays, such as unions and intersections, as well as convenient syntax for concatenation (`+`) and set differencing (`\\`).
+Note that two features are considered the same if and only if their names are equal.
+
+# Examples
+```julia-repl
+𝒇 = FeatureSet([sum, length], [:sum, :length], [["distribution"], ["sampling"]], ["∑x¹", "∑x⁰"])
+X = randn(100, 2) # 2 time series, 100 samples long
+F = 𝒇(X)
+
+# Joining feature sets
+𝒇₁ = FeatureSet([x->min(x...), x->max(x...)], [:min, :max], [["distribution"], ["distribution"]], ["minimum", "maximum"])
+𝒈₁ = 𝒇 + 𝒇₁
+G = 𝒈₁(X)
+
+# Intersecting feature sets, where feature names are used exclusively to identify features
+𝒇₂ = FeatureSet(x->prod, :sum, ["distributions"], "∏x")
+𝒈₂ = 𝒇 ∪ 𝒇₂
+G = 𝒈₂(X)
+```
+"""
 struct FeatureSet <: AbstractFeatureSet
     features::Vector{AbstractFeature}
     FeatureSet(features::Vector{T}) where {T <: AbstractFeature} = new(features)
 end
 
-FeatureSet( methods::AbstractArray,
+FeatureSet( methods::AbstractVector,
             names=Symbol.(methods),
             keywords=fill([], length(methods)),
             descriptions=fill("", length(methods))) =
@@ -19,13 +47,15 @@ FeatureSet( methods::Function,
             descriptions="") =
             FeatureSet([Feature(methods, names, keywords, descriptions)])
 
+FeatureSet(f::AbstractFeature) = FeatureSet([f])
+
 export FeatureSet
 
 getfeatures(𝒇::AbstractFeatureSet) = 𝒇.features
 getmethods(𝒇::AbstractFeatureSet)  = getmethod.(𝒇)
 getnames(𝒇::AbstractFeatureSet)  = getname.(𝒇)
 getkeywords(𝒇::AbstractFeatureSet)  = getkeywords.(𝒇)
-getdescriptions(𝒇::AbstractFeatureSet)  = getdescriptions.(𝒇)
+getdescriptions(𝒇::AbstractFeatureSet)  = getdescription.(𝒇)
 export getfeatures, getmethods, getnames, getkeywords, getdescriptions
 
 size(𝒇::AbstractFeatureSet) = size(getfeatures(𝒇))
@@ -55,7 +85,6 @@ function Base.:+(𝒇::AbstractFeatureSet, 𝒇′::AbstractFeatureSet)
                                             getkeywords,
                                             getdescriptions]]...)
 end
-
 Base.:\(𝒇::AbstractFeatureSet, 𝒇′::AbstractFeatureSet) = Base.setdiff(𝒇, 𝒇′)
 
 (𝒇::AbstractFeatureSet)(x::AbstractVector) = FeatureVector([𝑓(x) for 𝑓 ∈ 𝒇], 𝒇)
