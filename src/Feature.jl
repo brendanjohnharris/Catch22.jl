@@ -1,13 +1,30 @@
-import Base.:(==), Base.show
+import Base.:(==), Base.show, Base.hash
+
 
 abstract type AbstractFeature <: Function end
 export AbstractFeature
+
+"""
+    𝑓 = Feature(method::Function, name=Symbol(method), keywords="", description="")
+
+Construct a `Feature`, which is a function annotated with a `name`, `keywords` and short `description`.
+Features can be called as functions while `getname(𝑓)`, `getkeywords(𝑓)` and `getdescription(𝑓)` can be used to access the annotations.
+The function should have at minimum a method for `AbstractVector`.
+The method on vectors will be applied column-wise to `Matrix` inputs, regardless of the function methods defined for `Matrix`.
+
+# Examples
+```julia-repl
+𝑓 = Feature(sum, :sum, ["distribution"], "Sum of time-series values")
+𝑓(1:10) # == sum(1:10) == 55
+getdescription(𝑓) # "Sum of time-series values"
+```
+"""
 struct Feature <: AbstractFeature
     method::Function
     name::Symbol
     keywords::Vector{String}
     description::String
-    Feature(method::Function, name=Symbol(method), keywords="", description="") = new(method, name, keywords, description)
+    Feature(method::Function, name=Symbol(method), keywords=[""], description="") = new(method, name, keywords, description)
 end
 Feature(args...) = Feature{Float64}(args...)
 export Feature
@@ -21,7 +38,11 @@ export getmethod, getname, getkeywords, getdescription
 (𝑓::AbstractFeature)(x::AbstractVector)  = getmethod(𝑓)(x)
 (𝑓::AbstractFeature)(X::AbstractArray) = mapslices(getmethod(𝑓), X; dims=1)
 
-Base.:(==)(𝑓::AbstractFeature, 𝑓′::AbstractFeature) = isequal(getname(𝑓), getname(𝑓′)) # We assume that any features with the same name are the same feature
+# We assume that any features with the same name are the same feature
+function Base.hash(𝑓::AbstractFeature, h::UInt)
+    return hash(𝑓.name, h)
+end
+Base.:(==)(𝑓::AbstractFeature, 𝑓′::AbstractFeature) = hash(𝑓) == hash(𝑓′)
 
 formatshort(𝑓::AbstractFeature) = ":"*string(getname(𝑓))*" "
 Base.show(𝑓::AbstractFeature) = print(formatshort(𝑓))
