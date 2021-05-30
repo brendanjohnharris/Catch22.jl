@@ -1,4 +1,4 @@
-import Base.size, Base.getindex, Base.setindex!, Base.similar, Base.eltype, Base.deleteat!, Base.filter, Base.:+
+import Base.size, Base.getindex, Base.setindex!, Base.similar, Base.eltype, Base.deleteat!, Base.filter, Base.union, Base.intersect, Base.convert, Base.promote_rule, Base.:+, Base.:\
 
 abstract type AbstractFeatureSet <: AbstractVector{Function} end
 export AbstractFeatureSet
@@ -98,6 +98,14 @@ function Base.:+(𝒇::AbstractFeatureSet, 𝒇′::AbstractFeatureSet)
                                             getdescriptions]]...)
 end
 Base.:\(𝒇::AbstractFeatureSet, 𝒇′::AbstractFeatureSet) = Base.setdiff(𝒇, 𝒇′)
+
+# Allow operations between FeatureSet and Feature by converting the Feature
+for p ∈ [:+, :\, :union, :intersect]
+    eval(quote
+        ($p)(𝒇::AbstractFeatureSet, f::AbstractFeature) = ($p)(𝒇, FeatureSet(f))
+        ($p)(f::AbstractFeature, 𝒇::AbstractFeatureSet) = ($p)(FeatureSet(f), 𝒇)
+    end)
+end
 
 (𝒇::AbstractFeatureSet)(x::AbstractVector) = FeatureVector([𝑓(x) for 𝑓 ∈ 𝒇], 𝒇)
 (𝒇::AbstractFeatureSet)(X::AbstractArray) = FeatureMatrix(mapslices(𝒇, X; dims=1), 𝒇)
