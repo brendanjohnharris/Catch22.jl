@@ -5,6 +5,10 @@ import Base.Array
 abstract type AbstractFeatureArray{T,N,D,A} <: AbstractDimArray{T,N,D,A} end
 export AbstractFeatureArray
 
+AbstractFeatureVector = AbstractFeatureArray{T, 1} where {T}
+AbstractFeatureMatrix = AbstractFeatureArray{T, 2} where {T}
+export AbstractFeatureVector, AbstractFeatureMatrix
+
 
 """
     F = FeatureArray(data::AbstractArray, features::Union{Tuple{Symbol},Vector{Symbol}}, [timeseries::Union{Vector, Tuple}], args...)
@@ -66,6 +70,8 @@ end
 function getindex(A::AbstractFeatureArray, 𝒇::AbstractFeatureSet, I...)
     getindex(A, getnames(𝒇), I...)
 end
+
+
 
 
 """
