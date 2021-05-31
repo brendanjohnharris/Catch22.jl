@@ -1,4 +1,4 @@
-import Base.size, Base.getindex, Base.setindex!, Base.similar, Base.eltype, Base.deleteat!, Base.filter, Base.union, Base.intersect, Base.convert, Base.promote_rule, Base.:+, Base.:\
+import Base: size, getindex, setindex!, similar, eltype, deleteat!, filter, union, intersect, convert, promote_rule, +, \
 
 abstract type AbstractFeatureSet <: AbstractVector{Function} end
 export AbstractFeatureSet
@@ -81,18 +81,18 @@ end
 IndexStyle(::AbstractFeatureSet) = IndexLinear()
 eltype(::AbstractFeatureSet) = AbstractFeature
 
-Base.similar(::AbstractFeatureSet, ::Type{S}, dims::Dims) where {S} = FeatureSet(Vector{AbstractFeature}(undef, dims[1]))
+similar(::AbstractFeatureSet, ::Type{S}, dims::Dims) where {S} = FeatureSet(Vector{AbstractFeature}(undef, dims[1]))
 
-Base.deleteat!(𝒇::AbstractFeatureSet, args...) = deleteat!(𝒇.features, args...)
+deleteat!(𝒇::AbstractFeatureSet, args...) = deleteat!(𝒇.features, args...)
 
-Base.filter(f, 𝒇::AbstractFeatureSet) = FeatureSet(Base.filter(f, getfeatures(𝒇)))
+filter(f, 𝒇::AbstractFeatureSet) = FeatureSet(filter(f, getfeatures(𝒇)))
 
-Base.:+(𝒇::AbstractFeatureSet, 𝒇′::AbstractFeatureSet) = FeatureSet(
+(+)(𝒇::AbstractFeatureSet, 𝒇′::AbstractFeatureSet) = FeatureSet(
                     [vcat(g(𝒇), g(𝒇′)) for g ∈ [getfeatures,
                                                 getnames,
                                                 getkeywords,
                                                 getdescriptions]]...)
-Base.:\(𝒇::AbstractFeatureSet, 𝒇′::AbstractFeatureSet) = Base.setdiff(𝒇, 𝒇′)
+(\)(𝒇::AbstractFeatureSet, 𝒇′::AbstractFeatureSet) = setdiff(𝒇, 𝒇′)
 
 # Allow operations between FeatureSet and Feature by converting the Feature
 for p ∈ [:+, :\, :union, :intersect]

@@ -1,5 +1,5 @@
 using DimensionalData
-import DimensionalData.dims, DimensionalData.refdims, DimensionalData.data, DimensionalData.name, DimensionalData.metadata, DimensionalData.rebuild, DimensionalData.parent
+import DimensionalData: dims, refdims, data, name, metadata, rebuild, parent, formatdims, AbstractDimArray
 import Base.Array
 
 abstract type AbstractFeatureArray{T,N,D,A} <: AbstractDimArray{T,N,D,A} end
@@ -34,7 +34,7 @@ export FeatureArray
 
 function FeatureArray(data::A, dims::D, refdims::R=(), name::Na=NoName()) where {D,R,A,Na}
     if typeof(dims[1]) <: Dim{:feature, Vector{Symbol}, A, B} where {A, B}
-        FeatureArray(data, DimensionalData.formatdims(data, dims), refdims, name, NoMetadata())
+        FeatureArray(data, formatdims(data, dims), refdims, name, NoMetadata())
     else
         @error "Incorrect dimensions for FeatureArray"
     end
@@ -108,8 +108,8 @@ FeatureArray(X::AbstractArray, 𝒇::AbstractFeatureSet) = FeatureArray(X::Abstr
     getnames(𝒇::FeatureArray)
 Get the names of features represented in the feature vector or array 𝒇 as a vector of symbols.
 """
-featureDims(A::DimensionalData.AbstractDimArray) = dims(A, :feature).val
+featureDims(A::AbstractDimArray) = dims(A, :feature).val
 getnames(A::AbstractFeatureArray) = featureDims(A)
 export getnames
 
-timeseriesDims(A::DimensionalData.AbstractDimArray) = dims(A, :timeseries).val
+timeseriesDims(A::AbstractDimArray) = dims(A, :timeseries).val

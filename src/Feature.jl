@@ -1,4 +1,4 @@
-import Base.:(==), Base.show, Base.hash
+import Base: ==, show, hash
 
 abstract type AbstractFeature <: Function end
 export AbstractFeature
@@ -38,10 +38,10 @@ export getmethod, getname, getkeywords, getdescription
 (𝑓::AbstractFeature)(X::AbstractArray) = mapslices(getmethod(𝑓), X; dims=1)
 
 # We assume that any features with the same name are the same feature
-Base.hash(𝑓::AbstractFeature, h::UInt) = hash(𝑓.name, h)
-Base.:(==)(𝑓::AbstractFeature, 𝑓′::AbstractFeature) = hash(𝑓) == hash(𝑓′)
+hash(𝑓::AbstractFeature, h::UInt) = hash(𝑓.name, h)
+(==)(𝑓::AbstractFeature, 𝑓′::AbstractFeature) = hash(𝑓) == hash(𝑓′)
 
 formatshort(𝑓::AbstractFeature) = ":"*string(getname(𝑓))*" "
-Base.show(𝑓::AbstractFeature) = print(formatshort(𝑓))
-Base.show(io::IO, 𝑓::AbstractFeature) = print(io, formatshort(𝑓))
-Base.show(io::IO, m::MIME"text/plain", 𝑓::AbstractFeature) = printstyled(io, formatshort(𝑓), color=:light_blue)
+show(𝑓::AbstractFeature) = print(formatshort(𝑓))
+show(io::IO, 𝑓::AbstractFeature) = print(io, formatshort(𝑓))
+show(io::IO, m::MIME"text/plain", 𝑓::AbstractFeature) = printstyled(io, formatshort(𝑓), color=:light_blue)
