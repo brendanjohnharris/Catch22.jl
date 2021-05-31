@@ -8,7 +8,7 @@ export AbstractFeatureSet
     FeatureSet(features::Vector{T}) where {T <: AbstractFeature}
 
 Construct a `FeatureSet` from `methods` (a vector of functions) and optionally provide `names` as a vector of symbols, `keywords` as a vector of vectors of strings and `descriptions` as a vector of strings.
-A `FeatureSet` can be called on time series vector or matrix `X` (with time series occupying columns) to return a `FeatureArray` of feature values.
+A `FeatureSet` can be called on a time series vector or matrix `X` (with time series occupying columns) to return a `FeatureArray` of feature values.
 Subsets of a `FeatureSet` `𝒇` can be obtained by indexing with feature names as symbols.
 `FeatureSet`s also support set operations defined for arrays, such as unions and intersections, as well as convenient syntax for concatenation (`+`) and set differencing (`\\`).
 Note that two features are considered the same if and only if their names are equal.
@@ -81,22 +81,17 @@ end
 IndexStyle(::AbstractFeatureSet) = IndexLinear()
 eltype(::AbstractFeatureSet) = AbstractFeature
 
-function Base.similar(::AbstractFeatureSet, ::Type{S}, dims::Dims) where {S}
-    FeatureSet(Vector{AbstractFeature}(undef, dims[1]))
-end
+Base.similar(::AbstractFeatureSet, ::Type{S}, dims::Dims) where {S} = FeatureSet(Vector{AbstractFeature}(undef, dims[1]))
 
-function Base.deleteat!(𝒇::AbstractFeatureSet, args...)
-    deleteat!(𝒇.features, args...)
-end
+Base.deleteat!(𝒇::AbstractFeatureSet, args...) = deleteat!(𝒇.features, args...)
 
 Base.filter(f, 𝒇::AbstractFeatureSet) = FeatureSet(Base.filter(f, getfeatures(𝒇)))
 
-function Base.:+(𝒇::AbstractFeatureSet, 𝒇′::AbstractFeatureSet)
-    FeatureSet([vcat(g(𝒇), g(𝒇′)) for g ∈ [ getfeatures,
-                                            getnames,
-                                            getkeywords,
-                                            getdescriptions]]...)
-end
+Base.:+(𝒇::AbstractFeatureSet, 𝒇′::AbstractFeatureSet) = FeatureSet(
+                    [vcat(g(𝒇), g(𝒇′)) for g ∈ [getfeatures,
+                                                getnames,
+                                                getkeywords,
+                                                getdescriptions]]...)
 Base.:\(𝒇::AbstractFeatureSet, 𝒇′::AbstractFeatureSet) = Base.setdiff(𝒇, 𝒇′)
 
 # Allow operations between FeatureSet and Feature by converting the Feature

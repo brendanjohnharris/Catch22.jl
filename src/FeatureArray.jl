@@ -63,14 +63,9 @@ Base.Array(A::AbstractFeatureArray) = Array(parent(A))
     FeatureArray(data, dims, refdims, name, metadata)
 end
 
-function getindex(A::AbstractFeatureArray, 𝑓::AbstractFeature, I...)
-    getindex(A, getname(𝑓), I...)
-end
+getindex(A::AbstractFeatureArray, 𝑓::AbstractFeature, I...) = getindex(A, getname(𝑓), I...)
 
-function getindex(A::AbstractFeatureArray, 𝒇::AbstractFeatureSet, I...)
-    getindex(A, getnames(𝒇), I...)
-end
-
+getindex(A::AbstractFeatureArray, 𝒇::AbstractFeatureSet, I...) = getindex(A, getnames(𝒇), I...)
 
 
 

@@ -1,6 +1,5 @@
 import Base.:(==), Base.show, Base.hash
 
-
 abstract type AbstractFeature <: Function end
 export AbstractFeature
 
@@ -39,9 +38,7 @@ export getmethod, getname, getkeywords, getdescription
 (𝑓::AbstractFeature)(X::AbstractArray) = mapslices(getmethod(𝑓), X; dims=1)
 
 # We assume that any features with the same name are the same feature
-function Base.hash(𝑓::AbstractFeature, h::UInt)
-    return hash(𝑓.name, h)
-end
+Base.hash(𝑓::AbstractFeature, h::UInt) = hash(𝑓.name, h)
 Base.:(==)(𝑓::AbstractFeature, 𝑓′::AbstractFeature) = hash(𝑓) == hash(𝑓′)
 
 formatshort(𝑓::AbstractFeature) = ":"*string(getname(𝑓))*" "
