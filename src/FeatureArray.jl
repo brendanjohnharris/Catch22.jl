@@ -44,7 +44,7 @@ function FeatureArray(data::AbstractArray, features::Union{Tuple{Symbol}, Vector
     FeatureArray(data, (Dim{:feature}(features), fill(AnonDim(), ndims(data)-1)...), args...)
 end
 function FeatureArray(data::AbstractArray, features::Union{Tuple{Symbol}, Vector{Symbol}}, timeseries::Union{Vector, Tuple}, args...)
-    if typeof(data) <: AbstractVector
+    if data isa AbstractVector
         FeatureArray(reshape(data, :, 1), (Dim{:feature}(features), Dim{:timeseries}(timeseries)), args...)
     else
         FeatureArray(data, (Dim{:feature}(features), Dim{:timeseries}(timeseries)), args...)

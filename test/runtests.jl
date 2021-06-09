@@ -44,7 +44,7 @@ catch22(randn(10, 10)) # To avoid compilation in test @time
 X = randn(1000, 100)
 @testset "Arrays" begin
     @test_nowarn begin
-        @time typeof(catch22(X)) <: FeatureMatrix
+        @time catch22(X) isa FeatureMatrix
     end
 end;
 
