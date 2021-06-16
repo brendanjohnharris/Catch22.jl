@@ -26,7 +26,7 @@ Catch22._catch22(𝐱, :DN_HistogramMode_5)
 ```
 """
 function _catch22(𝐱::AbstractVector, fName::Symbol)::Float64
-    if any(isinf.(𝐱)) || any(isnan.(𝐱))
+    if any(isinf.(𝐱)) || any(isnan.(𝐱)) || length(𝐱) < 3
         return NaN
     end
     𝐱 = zscore(𝐱)
