@@ -1,0 +1,5 @@
+# Text files get lf
+* text=auto eol=lf
+
+# Ignore binary files
+*.{png,jpg,jpeg,gif,webp,woff,woff2} binary
