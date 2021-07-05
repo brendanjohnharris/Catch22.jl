@@ -30,6 +30,7 @@ export Feature
 
 getmethod(𝑓::AbstractFeature)  = 𝑓.method
 getname(𝑓::AbstractFeature)  = 𝑓.name
+getnames(𝑓::AbstractFeature)  = [𝑓.name]
 getkeywords(𝑓::AbstractFeature)  = 𝑓.keywords
 getdescription(𝑓::AbstractFeature)  = 𝑓.description
 export getmethod, getname, getkeywords, getdescription
