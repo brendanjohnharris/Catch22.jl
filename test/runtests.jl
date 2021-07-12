@@ -46,7 +46,7 @@ end;
 
 # Test catch22 on a multidimensional array
 println("Testing 1000×20×20 array input")
-catch22(randn(10, 10))
+catch22(randn(10, 10, 10))
 X = randn(1000, 20, 20)
 @testset "Arrays" begin
     @test @time catch22(X) isa FeatureArray{T, 3} where {T}

@@ -103,5 +103,13 @@ for p ∈ [:+, :\, :union, :intersect]
 end
 
 (𝒇::AbstractFeatureSet)(x::AbstractVector) = FeatureVector([𝑓(x) for 𝑓 ∈ 𝒇], 𝒇)
-(𝒇::AbstractFeatureSet)(X::AbstractArray) = FeatureArray(mapslices(𝒇, X; dims=1), 𝒇)
+
+function (𝒇::AbstractFeatureSet)(X::AbstractArray)
+    F = Array{Float64}(undef, (length(𝒇), size(X)[2:end]...))
+    Threads.@threads for i ∈ CartesianIndices(size(F)[2:end]) # The @threads overhead is minimal
+        F[:, Tuple(i)...] = vec(𝒇(X[:, Tuple(i)...]))
+    end
+    FeatureArray(F, 𝒇)
+end
+
 (𝒇::AbstractFeatureSet)(x, f::Symbol) = 𝒇[f](x)
