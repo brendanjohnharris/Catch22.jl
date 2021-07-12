@@ -1,8 +1,5 @@
 using SafeTestsets
 
-# ------------------------------------------------------------------------------------------------ #
-#                                               Tests                                              #
-# ------------------------------------------------------------------------------------------------ #
 @safetestset "Catch22" begin
 using Catch22
 import Catch22.featurenames, Catch22.testdata, Catch22.testoutput, Catch22.testnames
@@ -17,14 +14,14 @@ function isnearlyequalorallnan(a::Real, b::Real)
     isapprox(a, b, rtol=1e-5) || (isnan(a) && isnan(b))
 end
 
-# ----------------------------------- Test features one by one ----------------------------------- #
+# Test features one by one
 println("Testing individual features")
 @testset "Feature $(getname(f))" for f ∈ catch22
         @test isnearlyequalorallnan(f(testdata[:test]), testoutput[:test][f])
 end;
 
 
-# ------------------------- Test catch22, time series by time series ------------------------- #
+# Test catch22, time series by time series
 catch22(testdata[:test]) # To avoid compilation in test @time
 println("Testing sample datasets")
 function testFeatures(t::Symbol)
@@ -38,19 +35,26 @@ end;
 
 
 
-# --------------------------------- Test catch22 on an array --------------------------------- #
+# Test catch22 on a matrix
 println("Testing 1000×100 array input")
-catch22(randn(10, 10)) # To avoid compilation in test @time
+catch22(randn(10, 10))
 X = randn(1000, 100)
+@testset "Matrices" begin
+    @test @time catch22(X) isa FeatureMatrix
+end;
+
+
+# Test catch22 on a multidimensional array
+println("Testing 1000×20×20 array input")
+catch22(randn(10, 10))
+X = randn(1000, 20, 20)
 @testset "Arrays" begin
-    @test_nowarn begin
-        @time catch22(X) isa FeatureMatrix
-    end
+    @test @time catch22(X) isa FeatureArray{T, 3} where {T}
 end;
 
 
 
-# ---------------------------------- Test FeatureSet operations ---------------------------------- #
+# Test FeatureSet operations
 println("Testing FeatureSet operations")
 
 @testset "FeatureSet" begin

@@ -113,3 +113,9 @@ getnames(A::AbstractFeatureArray) = featureDims(A)
 export getnames
 
 timeseriesDims(A::AbstractDimArray) = dims(A, :timeseries).val
+
+function DimensionalData.setdims(F::AbstractFeatureArray, dim::Int, val::Pair{Symbol, T}) where {T}
+    G = DimensionalData.set(F, F.dims[dim] => Dim{val.first})
+    G = DimensionalData.setdims(G, Dim{val.first}(val.second))
+end
+export setdims
