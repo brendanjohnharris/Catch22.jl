@@ -51,6 +51,9 @@ function FeatureArray(data::AbstractArray, features::Union{Tuple{Symbol}, Vector
     end
 end
 
+FeatureArray(D::DimArray) = FeatureArray(D.data, D.dims, D.refdims, D.name, D.metadata)
+# DimensionalData.DimArray(D::FeatureArray) = DimArray(D.data, D.dims, D.refdims, D.name, D.metadata)
+
 dims(A::AbstractFeatureArray) = A.dims
 refdims(A::AbstractFeatureArray) = A.refdims
 data(A::AbstractFeatureArray) = A.data
@@ -118,9 +121,10 @@ export getnames
 
 timeseriesDims(A::AbstractDimArray) = getdim(A, :timeseries)
 
-function setdim(F::AbstractDimArray, dim, vals...)
+function setdim(F::DimArray, dim, vals...)
     dimvec = [x for x in dims(F)]
     [(dimvec[dim[d]] = Dim{vals[d].first}(vals[d].second)) for d ∈ 1:lastindex(dim)]
     DimArray(Array(F), Tuple(dimvec))
 end
+setdim(F::AbstractFeatureArray, args...) = FeatureArray(setdim(F, args...))
 export setdim
