@@ -104,18 +104,23 @@ FeatureArray(X::AbstractArray, 𝒇::AbstractFeatureSet) = FeatureArray(X::Abstr
 
 (FeatureArray{T,N} where {T})(x::AbstractArray{S,N}, args...) where {S,N} = FeatureArray(x, args...)
 
+
+getdim(X::AbstractDimArray, dim) = dims(X, dim).val
+export getdim
+
 """
     getnames(𝒇::FeatureArray)
 Get the names of features represented in the feature vector or array 𝒇 as a vector of symbols.
 """
-featureDims(A::AbstractDimArray) = dims(A, :feature).val
+featureDims(A::AbstractDimArray) = getdim(A, :feature)
 getnames(A::AbstractFeatureArray) = featureDims(A)
 export getnames
 
-timeseriesDims(A::AbstractDimArray) = dims(A, :timeseries).val
+timeseriesDims(A::AbstractDimArray) = getdim(A, :timeseries)
 
-function DimensionalData.setdims(F::AbstractFeatureArray, dim::Int, val::Pair{Symbol, T}) where {T}
-    G = DimensionalData.set(F, F.dims[dim] => Dim{val.first})
-    G = DimensionalData.setdims(G, Dim{val.first}(val.second))
+function setdim(F::AbstractDimArray, dim, vals...)
+    dimvec = [x for x in dims(F)]
+    [(dimvec[dim[d]] = Dim{vals[d].first}(vals[d].second)) for d ∈ 1:lastindex(dim)]
+    DimArray(Array(F), Tuple(dimvec))
 end
-export setdims
+export setdim
