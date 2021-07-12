@@ -126,5 +126,5 @@ function setdim(F::DimArray, dim, vals...)
     [(dimvec[dim[d]] = Dim{vals[d].first}(vals[d].second)) for d ∈ 1:lastindex(dim)]
     DimArray(Array(F), Tuple(dimvec))
 end
-setdim(F::AbstractFeatureArray, args...) = FeatureArray(setdim(F, args...))
+setdim(F::AbstractFeatureArray, args...) = FeatureArray(setdim(DimArray(F), args...))
 export setdim
