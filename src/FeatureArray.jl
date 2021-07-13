@@ -50,6 +50,12 @@ function FeatureArray(data::AbstractArray, features::Union{Tuple{Symbol}, Vector
         FeatureArray(data, (Dim{:feature}(features), Dim{:timeseries}(timeseries)), args...)
     end
 end
+function FeatureArray(data::AbstractArray, features::Union{Tuple{Symbol}, Vector{Symbol}}, otherdims::Union{Pair, Tuple{Pair}, Vector{Pair}}, args...)
+    if otherdims isa Pair
+        otherdims = [otherdims]
+    end
+    FeatureArray(data, (Dim{:feature}(features), [Dim{x.first}(x.second[:]) for x ∈ otherdims]...), args...)
+end
 
 FeatureArray(D::DimArray) = FeatureArray(D.data, D.dims, D.refdims, D.name, D.metadata)
 # DimensionalData.DimArray(D::FeatureArray) = DimArray(D.data, D.dims, D.refdims, D.name, D.metadata)
