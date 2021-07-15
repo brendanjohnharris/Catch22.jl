@@ -2,19 +2,18 @@ using Catch22
 using Clustering
 using CSV
 using Plots
-using StatsBase
+using Statistics
 using UrlDownload
 
 pyplot()
-X = urldownload("https://ndownloader.figshare.com/files/24950795", true, format=:CSV, header=false, delim=",", type=Float64, silencewarnings=true) |> Array; # Ignore the warnings
+X = urldownload("https://ndownloader.figshare.com/files/24950795", true, format=:CSV, header=false, delim=",", type=Float64, silencewarnings=true) |> Array;
 
 nomissing = F -> F[.!ismissing.(Array(F))]
 X = [nomissing(collect(x)) for x in X];
 
-F = hcat([catch22(Float64.(x)) for x in X]...); # May take a minute
-Df = 1.0.-abs.(StatsBase.corspearman(F'))
-idxs = Clustering.hclust(Df; linkage=:average, branchorder=:optimal).order
+F = FeatureArray(fill(NaN, length(catch22), length(X)), catch22);
+@time Threads.@threads for x ∈ 1:length(X)
+    F[:, x] = catch22(Float64.(X[x]))
+end
 
-p = plot(Df[idxs, idxs], seriestype = :heatmap, aspect_ratio=:equal, xaxis=nothing)
-
-plot!(yticks=(1:size(Df, 1), replace.(string.(Catch22.featurenames[idxs]), '_'=>"\\_")), size=(800, 400), xlims=[0.5, size(Df, 1)+0.5], ylims=[0.5, size(Df, 1)+0.5], box=:on, colorbar_title="1-|ρ|", clims=(0.0, 1.0))
+covarianceimage(mapslices(Catch22.zscore, F, dims=2), background_color_legend=nothing, foreground_color_legend=nothing, colorbar_title="|r|", colormode=:top, dpi=600)
