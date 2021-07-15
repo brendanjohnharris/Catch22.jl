@@ -44,6 +44,7 @@ X = randn(1000, 100)
 end;
 
 
+
 # Test catch22 on a multidimensional array
 println("Testing 1000×20×20 array input")
 catch22(randn(10, 10, 10))
