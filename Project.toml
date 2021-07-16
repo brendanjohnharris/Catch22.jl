@@ -16,6 +16,7 @@ catch22_jll = "8a07c0c5-99ad-56cb-bc82-72eed1bb61ce"
 
 [compat]
 DimensionalData = "0.16, 0.17"
+Requires = "1"
 SafeTestsets = "0.0.1"
 julia = "1.6"
 
