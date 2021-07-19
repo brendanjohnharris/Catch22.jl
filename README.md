@@ -1,5 +1,6 @@
 # Catch22.jl
 [![DOI](https://zenodo.org/badge/342070622.svg)](https://zenodo.org/badge/latestdoi/342070622)
+![build](https://github.com/brendanjohnharris/catch22/actions/workflows/test.yml/badge.svg)
 
 A Julia package wrapping [_catch22_](https://www.github.com/chlubba/catch22), which is a set of 22 time-series features shown by [Lubba et al. (2019)](https://doi.org/10.1007/s10618-019-00647-x) to be performant in a range of time-series classification problems.
 
