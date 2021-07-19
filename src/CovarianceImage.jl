@@ -19,7 +19,7 @@ Optional keyword arguments include:
 """
 covarianceimage;
 @userplot CovarianceImage
-@recipe function f(g::CovarianceImage; palette=[:cornflowerblue, :crimson, :forestgreen], colormode=:top, colorbargrad=:binary, donames=true)
+@recipe function f(g::CovarianceImage; palette=[:cornflowerblue, :crimson, :forestgreen], colormode=:top, colorbargrad=:binary, donames=true, docluster=true)
     if g.args[1] isa AbstractFeatureArray || g.args[1] isa AbstractDimArray
         f, Σ² = string.(getdim(g.args[1], 2)), g.args[1] |> Array
     elseif length(g.args) == 2 && g.args[2] isa AbstractMatrix
@@ -31,7 +31,7 @@ covarianceimage;
         Σ² = cov(Σ²')
     end
     Dr = 1.0.-abs.(Σ²)
-    if issymmetric(Dr)
+    if docluster == true && issymmetric(Dr)
         idxs = Clustering.hclust(Dr; linkage=:average, branchorder=:optimal).order
     else
         @warn "Correlation distance matrix is not symmetric, so not clustering"
