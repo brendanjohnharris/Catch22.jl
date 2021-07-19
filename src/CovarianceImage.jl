@@ -20,11 +20,11 @@ Optional keyword arguments include:
 covarianceimage;
 @userplot CovarianceImage
 @recipe function f(g::CovarianceImage; palette=[:cornflowerblue, :crimson, :forestgreen], colormode=:top, colorbargrad=:binary, donames=true)
-    @assert (length(g.args) == 2 && g.args[2] isa AbstractMatrix) || g.args[1] isa AbstractFeatureArray
-    if g.args[1] isa AbstractFeatureArray;
-        f, Σ² = string.(getnames(g.args[1])), g.args[1] |> Array
-    else
-    f, Σ² = g.args[1], g.args[2] |> Array
+    @assert () || g.args[1] isa AbstractFeatureArray
+    if g.args[1] isa AbstractFeatureArray || g.args[1] isa AbstractDimArray
+        f, Σ² = string.(getdim(g.args[1], 2)), g.args[1] |> Array
+    elseif length(g.args) == 2 && g.args[2] isa AbstractMatrix
+        f, Σ² = g.args[1], g.args[2] |> Array
     end
     if !issymmetric(Σ²)
         Σ² = cov(Σ²')
