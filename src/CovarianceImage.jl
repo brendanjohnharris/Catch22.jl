@@ -34,7 +34,9 @@ covarianceimage;
     if docluster == true && issymmetric(Dr)
         idxs = Clustering.hclust(Dr; linkage=:average, branchorder=:optimal).order
     else
-        @warn "Correlation distance matrix is not symmetric, so not clustering"
+        if !issymmetric(Dr)
+            @warn "Correlation distance matrix is not symmetric, so not clustering"
+        end
         idxs = 1:size(Dr, 1)
     end
 
@@ -81,6 +83,9 @@ covarianceimage;
     end
     @series begin
         seriestype := :heatmap
+        if colormode == :raw
+            seriescolor --> colorbargrad
+        end
         if backend() == Plots.GRBackend() # For some reason, GR does heatmaps differently
             xs = 0.5:1:size(H, 1)+0.5
         else
