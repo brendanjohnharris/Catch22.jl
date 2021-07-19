@@ -127,10 +127,11 @@ export getnames
 
 timeseriesDims(A::AbstractDimArray) = getdim(A, :timeseries)
 
-function setdim(F::DimArray, dim, vals...)
-    dimvec = [x for x in dims(F)]
+function setdim(F::DimArray, dim, vals...)::DimArray
+    dimvec = Vector{Dimension}(undef, length(dims(F)))
+    [(dimvec[i] = dims(F)[i]) for i ∈ 1:length(dims(F)) if !∈(i, dim)]
     [(dimvec[dim[d]] = Dim{vals[d].first}(vals[d].second)) for d ∈ 1:lastindex(dim)]
-    DimArray(Array(F), Tuple(dimvec))
+    DimArray(F, Tuple(dimvec)) # * Much faster to leave F as a DimArray rather than Array(F)
 end
 setdim(F::AbstractFeatureArray, args...) = FeatureArray(setdim(DimArray(F), args...))
 export setdim
