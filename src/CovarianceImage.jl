@@ -101,9 +101,7 @@ covarianceimage;
         label := nothing
         legend := :none
         marker_z := [0, max(abs.(Σ²)...)]
-        if colormode != :raw
-            markercolor := colorbargrad
-        end
+        markercolor := colorbargrad
         (zeros(2), zeros(2))
     end
     for i ∈ 1:N
@@ -112,13 +110,13 @@ covarianceimage;
             if colormode != :raw
                 label := "PC$i"
                 legend --> :topright
-                colorbar_title --> "Σ²"
-                colorbar_titlefontsize := 14
                 line_width := 20
             else
                 label := nothing
                 legend := nothing
             end
+            colorbar_title --> "Σ²"
+            colorbar_titlefontsize := 14
             xticks := :none
             size --> (800, 400)
             yflip --> true
