@@ -18,7 +18,7 @@ Since `FeatureArray <: AbstractFeatureArray <: AbstractDimArray`, further argume
 To access feature names, use `getnames(F)`.
 
 # Examples
-```julia-repl
+```julia
 data = rand(Int, 2, 10) # Some feature matrix with 2 features and 10 timeseries
 F = FeatureArray(data, [:sum, :length])
 ```
