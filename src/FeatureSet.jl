@@ -112,4 +112,6 @@ function (𝒇::AbstractFeatureSet)(X::AbstractArray)
     FeatureArray(F, 𝒇)
 end
 
+(𝒇::AbstractFeatureSet)(X::AbstractDimArray) = FeatureArray(𝒇(Array(X)), (Dim{:feature}(getnames(𝒇)), dims(X)[2:end]...))
+
 (𝒇::AbstractFeatureSet)(x, f::Symbol) = 𝒇[f](x)
