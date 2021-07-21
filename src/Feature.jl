@@ -37,6 +37,7 @@ export getmethod, getname, getkeywords, getdescription
 
 (𝑓::AbstractFeature)(x::AbstractVector)  = getmethod(𝑓)(x)
 (𝑓::AbstractFeature)(X::AbstractArray) = mapslices(getmethod(𝑓), X; dims=1)
+(𝑓::AbstractFeature)(X::AbstractDimArray) = DimArray(mapslices(getmethod(𝑓), X; dims=1), (Dim{:feature}([getname(𝑓)]), dims(X)[2:end]...))
 
 # We assume that any features with the same name are the same feature
 hash(𝑓::AbstractFeature, h::UInt) = hash(𝑓.name, h)
