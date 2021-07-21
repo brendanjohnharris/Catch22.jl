@@ -135,3 +135,11 @@ function setdim(F::DimArray, dim, vals...)::DimArray
 end
 setdim(F::AbstractFeatureArray, args...) = FeatureArray(setdim(DimArray(F), args...))
 export setdim
+
+function sortbydim(F::AbstractDimArray, dim; rev=false)
+    sdim = Catch22.getdim(F, dim)
+    idxs = sortperm(sdim; rev)
+    indx = [collect(1:size(F, i)) for i ∈ 1:ndims(F)]
+    indx[dim] = idxs
+    return F[indx...]
+end
