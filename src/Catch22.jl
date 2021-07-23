@@ -3,6 +3,7 @@ using catch22_jll
 using DimensionalData
 using Libdl
 using Requires
+using LinearAlgebra
 import Statistics.mean, Statistics.std, Statistics.cov
 
 function __init__()
@@ -29,7 +30,7 @@ zscore(𝐱::AbstractVector) = (𝐱 .- mean(𝐱))./(std(𝐱))
 Evaluate the feature `fName` on the single time series `𝐱`. See `Catch22.featuredescriptions` for a summary of the 22 available time series features. Time series with NaN or Inf values will produce NaN feature values.
 
 # Examples
-```julia-repl
+```julia
 𝐱 = Catch22.testdata[:test]
 Catch22._catch22(𝐱, :DN_HistogramMode_5)
 ```
@@ -60,7 +61,7 @@ Evaluate all features for a time series vector `𝐱` or the columns of an array
 Features are returned in a `FeatureArray`, in which array rows are annotated by feature names. A `FeatureArray` can be converted to a regular array with `Array(F)`.
 
 # Examples
-```julia-repl
+```julia
 𝐱 = Catch22.testdata[:test]
 𝐟 = catch22(𝐱)
 
@@ -81,10 +82,11 @@ end
 
 """
     DN_HistogramMode_5(x::AbstractVector{Union{Float64, Int}}) # For example
-An alternative to `catch22(...)``. All features, such as `DN_HistogramMode_5`, are exported as Features and can be evaluated by calling their names.
+An alternative to `catch22(:DN_HistogramMode_5](x)`.
+All features, such as `DN_HistogramMode_5`, are exported as Features and can be evaluated by calling their names.
 
 # Examples
-```julia-repl
+```julia
 𝐱 = Catch22.testdata[:test]
 f = DN_HistogramMode_5(𝐱)
 ```

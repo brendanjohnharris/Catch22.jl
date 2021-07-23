@@ -84,7 +84,7 @@ getindex(A::AbstractFeatureArray, 𝒇::AbstractFeatureSet, I...) = getindex(A, 
 An alias to construct a `FeatureArray` for a flat set of timeseries.
 
 # Examples
-```julia-repl
+```julia
 data = rand(Int, 2, 3) # Some feature matrix with 2 features and 3 timeseries
 F = FeatureMatrix(data, [:sum, :length], [1, 2, 3])
 ```
@@ -100,7 +100,7 @@ export FeatureMatrix, featureMatrix
 An alias to construct a `FeatureArray` for a single time series.
 
 # Examples
-```julia-repl
+```julia
 data = randn(2) # Feature values for 1 time series
 𝐟 = FeatureVector(data, [:sum, :length])
 ```

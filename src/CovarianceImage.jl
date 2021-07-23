@@ -1,23 +1,22 @@
 using .Clustering
 using .Plots
 using .Colors
-using LinearAlgebra
+using .LinearAlgebra
 
 """
-    covarianceimage(f, F; [palette=[:cornflowerblue, :crimson, :forestgreen], colormode=:top, colorbargrad=:binary, donames=true])
-Plot the covariance matrix of the columns of an `Array`, coloring elements by their contribution to each of the top 3 principal components. Either provide a vector `f` of N row names and an N×_ matrix `F`, or just a `Catch22.FeatureArray`.
+    covarianceimage(f, F; [palette=[:cornflowerblue, :crimson, :forestgreen], colormode=:top, colorbargrad=:binary, donames=true, kwargs...])
+Plot the covariance matrix of the columns of an `Array`, coloring elements by their contribution to each of the top 3 principal components.
+Either provide as positional arguments a vector `f` of N row names and an N×_ matrix `F`, or just a `Catch22.FeatureArray`.
 
-Optional keyword arguments include:
-
-`pallete`: A vector containing a color for each principal component
-
-`colorbargrad`: The color gradient for the colorbar
-
-`donames`: Override `f` and display no tick labels
-
-`colormode`: How to color the covariance matrix. `:raw` gives no coloring by principal components, `:top` is a combination of the top three PC colors and `:all` is a combination of all PC colors, where PCN = :black if N > length(palette).
+# Keyword Arguments
+- `palette`: a vector containing a color for each principal component.
+- `colorbargrad`: the color gradient for the colorbar.
+- `donames`: override `f` and display no tick labels.
+- `colormode`: how to color the covariance matrix. `:raw` gives no coloring by principal components, `:top` is a combination of the top three PC colors and `:all` is a combination of all PC colors, where PCN = :black if N > length(palette).
+- `docluster`: whether to perform clustering on the covariance matrix.
+- `kwargs...`: other `Plots` attributes.
 """
-covarianceimage;
+covarianceimage
 @userplot CovarianceImage
 @recipe function f(g::CovarianceImage; palette=[:cornflowerblue, :crimson, :forestgreen], colormode=:top, colorbargrad=:binary, donames=true, docluster=true)
     if g.args[1] isa AbstractFeatureArray || g.args[1] isa AbstractDimArray
