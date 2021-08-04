@@ -113,7 +113,7 @@ function (𝒇::AbstractFeatureSet)(X::AbstractArray)
     @withprogress name="catch22" begin
         Threads.@threads for i ∈ CartesianIndices(size(F)[2:end])
             F[:, Tuple(i)...] = vec(𝒇(X[:, Tuple(i)...]))
-            Threads.threadid() == 1 && (threadlog += 1)%50 == 0 && @logprogress (threadlog += 1)/threadmax
+            Threads.threadid() == 1 && (threadlog += 1)%50 == 0 && @logprogress threadlog/threadmax
         end
     end
     FeatureArray(F, 𝒇)
