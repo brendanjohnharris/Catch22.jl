@@ -3,6 +3,15 @@ using .Plots
 using .Colors
 using .LinearAlgebra
 
+function clustercovariance(Σ²)
+    issymmetric(Σ²) || (Σ² = cov(Σ²'))
+    Dr = 1.0.-abs.(Σ²)
+    if !issymmetric(Dr)
+        @warn "Correlation distance matrix is not symmetric, so not clustering"
+    end
+    Clustering.hclust(Dr; linkage=:average, branchorder=:optimal).order
+end
+
 """
     covarianceimage(f, F; [palette=[:cornflowerblue, :crimson, :forestgreen], colormode=:top, colorbargrad=:binary, donames=true, kwargs...])
 Plot the covariance matrix of the columns of an `Array`, coloring elements by their contribution to each of the top 3 principal components.
@@ -18,7 +27,7 @@ Either provide as positional arguments a vector `f` of N row names and an N×_ m
 """
 covarianceimage
 @userplot CovarianceImage
-@recipe function f(g::CovarianceImage; palette=[:cornflowerblue, :crimson, :forestgreen], colormode=:top, colorbargrad=:binary, donames=true, docluster=true)
+Plots.@recipe function f(g::CovarianceImage; palette=[:cornflowerblue, :crimson, :forestgreen], colormode=:top, colorbargrad=:binary, donames=true, docluster=true, verbose=true)
     if g.args[1] isa AbstractFeatureArray || g.args[1] isa AbstractDimArray
         f, Σ² = string.(getdim(g.args[1], 1)), g.args[1] |> Array
     elseif length(g.args) == 2 && g.args[2] isa AbstractMatrix
@@ -26,16 +35,14 @@ covarianceimage
     else
         @error "Incorrect arguments; give row names and a matrix or an annotated DimArray"
     end
-    if !issymmetric(Σ²)
-        Σ² = cov(Σ²')
-    end
-    Dr = 1.0.-abs.(Σ²)
-    if docluster == true && issymmetric(Dr)
-        idxs = Clustering.hclust(Dr; linkage=:average, branchorder=:optimal).order
+
+    issymmetric(Σ²) || (Σ² = cov(Σ²'))
+
+    if docluster == true
+        idxs = clustercovariance(Σ²)
+    elseif docluster isa Union{AbstractVector, Tuple}
+        idxs = docluster # Precomputed indices
     else
-        if !issymmetric(Dr)
-            @warn "Correlation distance matrix is not symmetric, so not clustering"
-        end
         idxs = 1:size(Dr, 1)
     end
 
@@ -47,15 +54,20 @@ covarianceimage
         H = abs.(Σ̂²)
         colorbar --> true
     else
-        P = abs.((eigvecs∘Symmetric∘Array)(Σ̂²))
+        λ = (eigvals∘Symmetric∘Array)(Σ̂²)
+        λi = sortperm(abs.(λ), rev=true)
+        λ = λ[λi]
+        P = (eigvecs∘Symmetric∘Array)(Σ̂²)[:, λi] # Now sorted by decreasing eigenvalue norm
+        vidxs = sortperm(abs.(P[:, 1]), rev=true)
+        verbose && isnothing(printstyled("Feature weights:\n", color=:red, bold=true)) && display(vcat(hcat("Feature", ["PC$i" for i ∈ 1:N]...) , hcat(f̂[vidxs], round.(P[vidxs, 1:N], sigdigits=3))))
+        P = abs.(P)
         if colormode == :top # * Color by the number of PC's given by the length of the color palette
-            P = P[:, end:-1:end-N+1]
+            P = P[:, 1:N]
             P̂ = P.^2.0./sum(P.^2.0, dims=2)
             # Square the loadings, since they are added in quadrature. Maybe not a completely faithful representation of the PC proportions, but should get the job done.
             𝑓′ = parse.(Colors.XYZ, palette[1:N]);
         elseif colormode == :all # * Color by all PC's. This can end up very brown
-            P = P[:, end:-1:1]
-            Σ̂′² = Diagonal(abs.(eigvals(Symmetric(Array(Σ̂²))))[end:-1:1])
+            Σ̂′² = Diagonal(abs.(λ))
             P̂ = P.^2.0./sum(P.^2.0, dims=2)
             p = fill(:black, size(P, 2))
             p[1:N] = palette[1:N]
