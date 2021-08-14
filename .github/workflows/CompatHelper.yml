@@ -1,4 +1,4 @@
-   name: CompatHelper
+name: CompatHelper
 on:
   schedule:
     - cron: 0 0 * * *
