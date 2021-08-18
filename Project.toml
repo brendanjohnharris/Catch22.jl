@@ -18,6 +18,7 @@ catch22_jll = "8a07c0c5-99ad-56cb-bc82-72eed1bb61ce"
 [compat]
 Colors = "0.12"
 DimensionalData = "0.15 - 0.17"
+ProgressLogging = "0.1"
 Requires = "1"
 SafeTestsets = "0.0.1"
 julia = "1.6"
