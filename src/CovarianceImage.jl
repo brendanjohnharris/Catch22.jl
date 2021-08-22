@@ -38,6 +38,8 @@ Plots.@recipe function f(g::CovarianceImage; palette=[:cornflowerblue, :crimson,
 
     issymmetric(Σ²) || (Σ² = cov(Σ²'))
 
+    any(diag(Σ²) .== 0) && @warn "Covariance matrix is not positive definite, which may cause an error"
+
     if docluster == true
         idxs = clustercovariance(Σ²)
     elseif docluster isa Union{AbstractVector, Tuple}
@@ -126,7 +128,7 @@ Plots.@recipe function f(g::CovarianceImage; palette=[:cornflowerblue, :crimson,
                 label := nothing
                 legend := nothing
             end
-            colorbar_title --> "Σ²"
+            colorbar_title --> "|Σ²|"
             colorbar_titlefontsize := 14
             xticks := :none
             size --> (800, 400)
