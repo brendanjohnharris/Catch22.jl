@@ -39,7 +39,7 @@ Plots.@recipe function f(g::CovarianceImage; palette=[:cornflowerblue, :crimson,
     issymmetric(Σ²) || (Σ² = cov(Σ²'))
 
     any(diag(Σ²) .== 0) && @warn "Covariance matrix is not positive definite, which may cause an error"
-
+    linecolor --> nothing
     if docluster == true
         idxs = clustercovariance(Σ²).order
     elseif docluster isa Union{AbstractVector, Tuple}
