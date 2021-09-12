@@ -45,7 +45,7 @@ Plots.@recipe function f(g::CovarianceImage; palette=[:cornflowerblue, :crimson,
     elseif docluster isa Union{AbstractVector, Tuple}
         idxs = docluster # Precomputed indices
     else
-        idxs = 1:size(Dr, 1)
+        idxs = 1:size(Σ², 1)
     end
     Σ̂² = Σ²[idxs, idxs]
     A = abs.(Σ̂²)./max(abs.(Σ̂²)...)
