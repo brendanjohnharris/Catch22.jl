@@ -25,7 +25,7 @@ F = 𝒇(X)
 𝒈₁ = 𝒇 + 𝒇₁
 G = 𝒈₁(X)
 
-# Intersecting feature sets, where feature are identified exclusively by their names
+# Intersecting feature sets, where features are identified exclusively by their names
 𝒇₂ = FeatureSet(x->prod, :sum, ["distributions"], "∏x")
 𝒈₂ = 𝒇 ∩ 𝒇₂ # The intersection of two feature sets, both with their own :sum
 G = 𝒈₂(X) # The intersection contains the :sum of the first argument to ∩; 𝒇
