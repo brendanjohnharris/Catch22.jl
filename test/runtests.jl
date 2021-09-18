@@ -45,7 +45,6 @@ end;
 
 
 
-# Test catch22 on a multidimensional array
 println("Testing 1000×20×20 array input")
 catch22(randn(10, 10, 10))
 X = randn(1000, 20, 20)
@@ -55,7 +54,6 @@ end;
 
 
 
-# Test FeatureSet operations
 println("Testing FeatureSet operations")
 
 @testset "FeatureSet" begin
@@ -65,10 +63,24 @@ println("Testing FeatureSet operations")
     𝒇₃ = 𝒇₁ + 𝒇₂
     @test_nowarn 𝒇₁(X)
     @test_nowarn 𝒇₃(X)
-    @test_nowarn getnames(𝒇₃) == [:sum, :length , :DN_HistogramMode_5, :DN_HistogramMode_10]
-    @test_nowarn 𝒇₁ == 𝒇₃ \ 𝒇₂ == setdiff(𝒇₃, 𝒇₂)
-    @test_nowarn 𝒇₃ == 𝒇₁ ∪ 𝒇₂
-    @test_nowarn 𝒇₂ == 𝒇₃ ∩ 𝒇₂
+    @test getnames(𝒇₃) == [:sum, :length , :DN_HistogramMode_5, :DN_HistogramMode_10]
+    @test 𝒇₁ == 𝒇₃ \ 𝒇₂ == setdiff(𝒇₃, 𝒇₂)
+    @test 𝒇₃ == 𝒇₁ ∪ 𝒇₂
+    @test 𝒇₂ == 𝒇₃ ∩ 𝒇₂
 end;
+
+
+
+println("Testing CovariangeImage")
+@testset "CovariangeImage" begin
+    using Plots
+    using Clustering
+    X = hcat(randn(100, 100), 1:100)
+    F = catch22(X)
+    verbose = false
+    @test covarianceimage(F; colormode=:top, verbose) isa Plots.Plot
+    @test covarianceimage(F; colormode=:all, verbose) isa Plots.Plot
+    @test covarianceimage(F; colormode=:raw, verbose, colorbargrad=:viridis) isa Plots.Plot
+end
 
 end

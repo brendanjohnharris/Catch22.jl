@@ -19,6 +19,7 @@ include("FeatureSet.jl")
 include("FeatureArray.jl")
 include("metadata.jl")
 include("testdata.jl")
+include("TimeseriesFeatures.jl")
 
 catch22_jll.__init__() # Initialise the c-library
 

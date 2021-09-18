@@ -9,7 +9,7 @@ function clustercovariance(Σ²)
     if !issymmetric(Dr)
         @warn "Correlation distance matrix is not symmetric, so not clustering"
     end
-    Clustering.hclust(Dr; linkage=:average, branchorder=:optimal).order
+    Clustering.hclust(Dr; linkage=:average, branchorder=:optimal)
 end
 
 """
@@ -27,7 +27,7 @@ Either provide as positional arguments a vector `f` of N row names and an N×_ m
 """
 covarianceimage
 @userplot CovarianceImage
-Plots.@recipe function f(g::CovarianceImage; palette=[:cornflowerblue, :crimson, :forestgreen], colormode=:top, colorbargrad=:binary, donames=true, docluster=true, verbose=true)
+Plots.@recipe function f(g::CovarianceImage; palette=[:cornflowerblue, :crimson, :forestgreen], colormode=:top, colorbargrad=:binary, donames=true, docluster=true, verbose=true, dendrogram=false)
     if g.args[1] isa AbstractFeatureArray || g.args[1] isa AbstractDimArray
         f, Σ² = string.(getdim(g.args[1], 1)), g.args[1] |> Array
     elseif length(g.args) == 2 && g.args[2] isa AbstractMatrix
@@ -38,14 +38,15 @@ Plots.@recipe function f(g::CovarianceImage; palette=[:cornflowerblue, :crimson,
 
     issymmetric(Σ²) || (Σ² = cov(Σ²'))
 
+    any(diag(Σ²) .== 0) && @warn "Covariance matrix is not positive definite, which may cause an error"
+    linecolor --> nothing
     if docluster == true
-        idxs = clustercovariance(Σ²)
+        idxs = clustercovariance(Σ²).order
     elseif docluster isa Union{AbstractVector, Tuple}
         idxs = docluster # Precomputed indices
     else
-        idxs = 1:size(Dr, 1)
+        idxs = 1:size(Σ², 1)
     end
-
     Σ̂² = Σ²[idxs, idxs]
     A = abs.(Σ̂²)./max(abs.(Σ̂²)...)
     f̂ = f[idxs]
@@ -106,7 +107,11 @@ Plots.@recipe function f(g::CovarianceImage; palette=[:cornflowerblue, :crimson,
     end
     # Plot dummy data and set attributes
     @series begin
-        colorbar --> true
+        if dendrogram
+            colorbar := false
+        else
+            colorbar --> true
+        end
         seriestype := :scatter
         markersize := 0.0
         label := nothing
@@ -126,7 +131,7 @@ Plots.@recipe function f(g::CovarianceImage; palette=[:cornflowerblue, :crimson,
                 label := nothing
                 legend := nothing
             end
-            colorbar_title --> "Σ²"
+            colorbar_title --> "\$|\\Sigma^2|\$"
             colorbar_titlefontsize := 14
             xticks := :none
             size --> (800, 400)
@@ -143,6 +148,20 @@ Plots.@recipe function f(g::CovarianceImage; palette=[:cornflowerblue, :crimson,
             framestyle := :box
             seriescolor := palette[i]
             (Shape([0.0;], [0.0;]))
+        end
+    end
+    if dendrogram
+        @series begin
+            inset_subplots := (1, bbox(0.895, 0.0, 0.1, 1.0))
+            subplot := 2
+            orientation := :horizontal
+            yticks := nothing
+            showaxis := false
+            colorbar := nothing
+            axis := nothing
+            useheight := false
+            yflip := true
+            x := clustercovariance(Σ²)
         end
     end
 end
