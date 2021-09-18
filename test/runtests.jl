@@ -71,8 +71,8 @@ end;
 
 
 
-println("Testing CovariangeImage")
-@testset "CovariangeImage" begin
+println("Testing CovarianceImage")
+@testset "CovarianceImage" begin
     using Plots
     using Clustering
     X = hcat(randn(100, 100), 1:100)
