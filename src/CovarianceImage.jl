@@ -44,6 +44,8 @@ Plots.@recipe function f(g::CovarianceImage; palette=[:cornflowerblue, :crimson,
         idxs = clustercovariance(Σ²).order
     elseif docluster isa Union{AbstractVector, Tuple}
         idxs = docluster # Precomputed indices
+    elseif docluster isa Clustering.Hclust
+        idxs = docluster.order
     else
         idxs = 1:size(Σ², 1)
     end
@@ -62,6 +64,11 @@ Plots.@recipe function f(g::CovarianceImage; palette=[:cornflowerblue, :crimson,
         vidxs = sortperm(abs.(P[:, 1]), rev=true)
         verbose && isnothing(printstyled("Feature weights:\n", color=:red, bold=true)) && display(vcat(hcat("Feature", ["PC$i" for i ∈ 1:N]...) , hcat(f̂[vidxs], round.(P[vidxs, 1:N], sigdigits=3))))
         P = abs.(P)
+        # if colormode isa Matrix # Supply custom coloring matrix. Should be an nfeature×ncolor matrix
+        #     P = colormode
+        #     P = P[:, 1:N]
+        #     P̂ = P.^2.0./sum(P.^2.0, dims=2)
+        #     𝑓′ = parse.(Colors.XYZ, palette[1:N]);
         if colormode == :top # * Color by the number of PC's given by the length of the color palette
             P = P[:, 1:N]
             P̂ = P.^2.0./sum(P.^2.0, dims=2)
@@ -132,13 +139,13 @@ Plots.@recipe function f(g::CovarianceImage; palette=[:cornflowerblue, :crimson,
                 legend := nothing
             end
             colorbar_title --> "\$|\\Sigma^2|\$"
-            colorbar_titlefontsize := 14
+            colorbar_titlefontsize --> 14
             xticks := :none
             size --> (800, 400)
             yflip --> true
             lims := (0.5, size(H, 1)+0.5)
             aspect_ratio := :equal
-            legendfontsize := 8
+            legendfontsize --> 8
             if donames
                 yticks := (1:size(H, 1), replace.(string.(f̂), (r"_" => s"\\_",)))
             else
