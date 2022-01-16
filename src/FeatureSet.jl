@@ -103,16 +103,18 @@ for p ∈ [:+, :\, :union, :intersect]
     end)
 end
 
-(𝒇::AbstractFeatureSet)(x::AbstractVector) = FeatureVector([𝑓(x) for 𝑓 ∈ 𝒇], 𝒇)
+(𝒇::AbstractFeatureSet)(x::AbstractVector, subidxs) = any(subidxs) ? subloop(𝒇, x, subidxs) : FeatureVector([𝑓(x) for 𝑓 ∈ 𝒇], 𝒇)
 
+(𝒇::AbstractFeatureSet)(x::AbstractVector) = 𝒇(x, isa.(𝒇, (SubFeature,)))
 
 function (𝒇::AbstractFeatureSet)(X::AbstractArray)
+    subidxs = isa.(𝒇, (SubFeature,))
     F = Array{Float64}(undef, (length(𝒇), size(X)[2:end]...))
     threadlog = 0
     threadmax = prod(size(F)[2:end])/Threads.nthreads()
-    @withprogress name="catch22" begin
+    @withprogress name=String(Symbol(𝒇)) begin
         Threads.@threads for i ∈ CartesianIndices(size(F)[2:end])
-            F[:, Tuple(i)...] = vec(𝒇(X[:, Tuple(i)...]))
+            F[:, Tuple(i)...] = vec(𝒇(X[:, Tuple(i)...], subidxs))
             Threads.threadid() == 1 && (threadlog += 1)%50 == 0 && @logprogress threadlog/threadmax
         end
     end

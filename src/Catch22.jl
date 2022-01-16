@@ -15,6 +15,7 @@ function __init__()
 end
 
 include("Feature.jl")
+include("SubFeature.jl")
 include("FeatureSet.jl")
 include("FeatureArray.jl")
 include("metadata.jl")
