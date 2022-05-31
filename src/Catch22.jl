@@ -4,7 +4,7 @@ using DimensionalData
 using Libdl
 using Requires
 using LinearAlgebra
-import Statistics.mean, Statistics.std, Statistics.cov
+import Statistics: mean, std, cov
 
 function __init__()
     @require Plots="91a5bcdd-55d7-5caf-9e0b-520d859cae80" begin
@@ -21,7 +21,7 @@ include("metadata.jl")
 include("testdata.jl")
 include("TimeseriesFeatures.jl")
 
-catch22_jll.__init__() # Initialise the c-library
+catch22_jll.__init__() # Initialise the C library
 
 zscore(𝐱::AbstractVector) = (𝐱 .- mean(𝐱))./(std(𝐱))
 

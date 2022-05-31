@@ -1,5 +1,6 @@
 using DimensionalData
-import DimensionalData: dims, refdims, data, name, metadata, rebuild, parent, formatdims, AbstractDimArray
+import DimensionalData: dims, refdims, data, name, metadata, rebuild, parent, AbstractDimArray, NoName
+import DimensionalData.Dimensions: AnonDim, format, LookupArrays.NoMetadata
 import Base.Array
 
 abstract type AbstractFeatureArray{T,N,D,A} <: AbstractDimArray{T,N,D,A} end
@@ -33,8 +34,8 @@ end
 export FeatureArray
 
 function FeatureArray(data::A, dims::D, refdims::R=(), name::Na=NoName()) where {D,R,A,Na}
-    if typeof(dims[1]) <: Dim{:feature, Vector{Symbol}, A, B} where {A, B}
-        FeatureArray(data, formatdims(data, dims), refdims, name, NoMetadata())
+    if typeof(dims[1]) <: Dim{:feature, Vector{Symbol}}
+        FeatureArray(data, format(dims, data), refdims, name, NoMetadata())
     else
         @error "Incorrect dimensions for FeatureArray"
     end
@@ -72,10 +73,15 @@ Base.Array(A::AbstractFeatureArray) = Array(parent(A))
     FeatureArray(data, dims, refdims, name, metadata)
 end
 
+# * Index with features
 getindex(A::AbstractFeatureArray, 𝑓::AbstractFeature, I...) = getindex(A, getname(𝑓), I...)
-
+setindex!(A::AbstractFeatureArray, x, 𝑓::AbstractFeature, I...) = setindex!(A, x, getname(𝑓), I...)
 getindex(A::AbstractFeatureArray, 𝒇::AbstractFeatureSet, I...) = getindex(A, getnames(𝒇), I...)
+setindex!(A::AbstractFeatureArray, x, 𝑓::AbstractFeatureSet, I...) = setindex!(A, x, getnames(𝑓), I...)
 
+# * Index with feature names
+getindex(A::AbstractFeatureArray, 𝑓::Union{Symbol, Vector{Symbol}}, I...) = getindex(A, At(𝑓), I...)
+setindex!(A::AbstractFeatureArray, x, 𝑓::Union{Symbol, Vector{Symbol}}, I...) = setindex!(A, x, At(𝑓), I...)
 
 
 """
