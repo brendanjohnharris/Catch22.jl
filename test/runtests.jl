@@ -22,7 +22,7 @@ end;
 
 
 # Test catch22, time series by time series
-catch22(testdata[:test]) # To avoid compilation in test @time
+catch22(testdata[:test])
 println("Testing sample datasets")
 function testFeatures(t::Symbol)
     @time f = catch22(testdata[t])
@@ -64,11 +64,43 @@ println("Testing FeatureSet operations")
     @test_nowarn 𝒇₁(X)
     @test_nowarn 𝒇₃(X)
     @test getnames(𝒇₃) == [:sum, :length , :DN_HistogramMode_5, :DN_HistogramMode_10]
+    @test_nowarn 𝒇₃[:sum]
+    @test getname(𝒇₃[:sum]) == :sum
+    @test all([getname(𝒇₃[x]) == x for x in getnames(𝒇₃)])
+    @test_nowarn 𝒇₃(X)[:sum, :]
+    @test 𝒇₃(X)[:sum] == 𝒇₃(X)[:sum, :]
+    @test_nowarn 𝒇₃(X)[[:sum, :length], :]
+    @test 𝒇₃(X)[[:sum, :length]] == 𝒇₃(X)[[:sum, :length], :]
     @test 𝒇₁ == 𝒇₃ \ 𝒇₂ == setdiff(𝒇₃, 𝒇₂)
     @test 𝒇₃ == 𝒇₁ ∪ 𝒇₂
     @test 𝒇₂ == 𝒇₃ ∩ 𝒇₂
 end;
 
+
+println("Testing FeatureArray indexing")
+
+@testset "FeatureArray indexing" begin
+    𝑓s = [:DN_HistogramMode_5, :DN_HistogramMode_10]
+    𝑓 = FeatureSet([DN_HistogramMode_10, DN_HistogramMode_5])
+
+    X = randn(1000)
+    F = catch22(X)
+    @test F[𝑓] == F[𝑓s][end:-1:1]
+    @test F[𝑓] == F[[2, 1]]
+    @test all(F[𝑓s] .== F[1:2]) # Importantly, F[𝑓s, :] is NOT SUPPORTED
+
+    X = randn(1000, 200)
+    F = catch22(X)
+    @test F[𝑓] == F[𝑓s][end:-1:1, :]
+    @test F[𝑓] == F[𝑓, :] == F[[2, 1], :]
+    @test F[𝑓s] == F[𝑓s, :] == F[1:2, :]
+
+    X = randn(1000, 20, 20)
+    F = catch22(X)
+    @test F[𝑓] == F[𝑓s][end:-1:1, :, :]
+    @test F[𝑓] == F[𝑓, :, :] == F[[2, 1], :, :]
+    @test F[𝑓s] == F[𝑓s, :, :] == F[1:2, :, :]
+end
 
 
 println("Testing CovarianceImage")

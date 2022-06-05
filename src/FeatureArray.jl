@@ -73,15 +73,19 @@ Base.Array(A::AbstractFeatureArray) = Array(parent(A))
     FeatureArray(data, dims, refdims, name, metadata)
 end
 
-# * Index with features
-getindex(A::AbstractFeatureArray, 𝑓::AbstractFeature, I...) = getindex(A, getname(𝑓), I...)
-setindex!(A::AbstractFeatureArray, x, 𝑓::AbstractFeature, I...) = setindex!(A, x, getname(𝑓), I...)
-getindex(A::AbstractFeatureArray, 𝒇::AbstractFeatureSet, I...) = getindex(A, getnames(𝒇), I...)
-setindex!(A::AbstractFeatureArray, x, 𝑓::AbstractFeatureSet, I...) = setindex!(A, x, getnames(𝑓), I...)
+# * Index with Features and feature names
+fidx(𝑓::AbstractFeature) = getname(𝑓)
+fidx(𝑓::AbstractFeatureSet) = getnames(𝑓)
+fidx(𝑓::Union{Symbol, Vector{Symbol}}) = At(𝑓)
+FeatureUnion = Union{Symbol, Vector{Symbol}, AbstractFeature, AbstractFeatureSet}
+getindex(A::AbstractFeatureVector, 𝑓::FeatureUnion) = getindex(A, fidx(𝑓))
+setindex!(A::AbstractFeatureVector, x, 𝑓::FeatureUnion) = setindex!(A, x, fidx(𝑓))
+getindex(A::AbstractFeatureArray, 𝑓::FeatureUnion, i, I...) = getindex(A, fidx(𝑓), i, I...)
+setindex!(A::AbstractFeatureArray, x, 𝑓::FeatureUnion, i, I...) = setindex!(A, x, fidx(𝑓), i, I...)
 
-# * Index with feature names
-getindex(A::AbstractFeatureArray, 𝑓::Union{Symbol, Vector{Symbol}}, I...) = getindex(A, At(𝑓), I...)
-setindex!(A::AbstractFeatureArray, x, 𝑓::Union{Symbol, Vector{Symbol}}, I...) = setindex!(A, x, At(𝑓), I...)
+# * And with features alone, no other dims. Here we assume features are along the first dim.
+getindex(A::AbstractFeatureArray, 𝑓::FeatureUnion) = getindex(A, 𝑓, fill(:, ndims(A)-1)...)
+setindex!(A::AbstractFeatureArray, x, 𝑓::FeatureUnion) = setindex!(A, x, 𝑓, fill(:, ndims(A)-1)...)
 
 
 """
