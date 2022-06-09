@@ -2,32 +2,36 @@ using SafeTestsets
 
 @safetestset "Catch22" begin
 using Catch22
-import Catch22.featurenames, Catch22.testdata, Catch22.testoutput, Catch22.testnames
+import Catch22.testdata, Catch22.testoutput, Catch22.testnames
 using Test
 
 function isnearlyequalorallnan(a::AbstractArray, b::AbstractArray)
     replace!(a, NaN=>0.0)
     replace!(b, NaN=>0.0)
-    all(map((x, y) -> isapprox(x, y, rtol=1e-5), a, b))
+    all(isapprox.(a, b, atol=1e-6))
 end
 function isnearlyequalorallnan(a::Real, b::Real)
-    isapprox(a, b, rtol=1e-5) || (isnan(a) && isnan(b))
+    isapprox(a, b, atol=1e-6) || (isnan(a) && isnan(b))
 end
 
 # Test features one by one
 println("Testing individual features")
-@testset "Feature $(getname(f))" for f ∈ catch22
-        @test isnearlyequalorallnan(f(testdata[:test]), testoutput[:test][f])
+@testset "Feature $(getname(f))" for f ∈ catch24
+        @test isnearlyequalorallnan(f(testdata[:test]), testoutput[:test][getname(f)])
 end;
 
 
 # Test catch22, time series by time series
-catch22(testdata[:test])
+catch24(testdata[:test])
 println("Testing sample datasets")
 function testFeatures(t::Symbol)
     @time f = catch22(testdata[t])
-    ff = testoutput[t]
-    isnearlyequalorallnan(Array(f), ff)
+    out = testoutput[t]
+    if isnothing(out)
+        all(isnan.(f))
+    else
+        isnearlyequalorallnan(Array(f), getindex.((out,), getnames(f)))
+    end
 end
 @testset "Dataset $f" for f in testnames
     @test testFeatures(f)
@@ -40,7 +44,7 @@ println("Testing 1000×100 array input")
 catch22(randn(10, 10))
 X = randn(1000, 100)
 @testset "Matrices" begin
-    @test @time catch22(X) isa FeatureMatrix
+    @test @time catch24(X) isa FeatureMatrix
 end;
 
 
@@ -49,7 +53,7 @@ println("Testing 1000×20×20 array input")
 catch22(randn(10, 10, 10))
 X = randn(1000, 20, 20)
 @testset "Arrays" begin
-    @test @time catch22(X) isa FeatureArray{T, 3} where {T}
+    @test @time catch24(X) isa FeatureArray{T, 3} where {T}
 end;
 
 
