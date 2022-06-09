@@ -1,5 +1,5 @@
 const featurenames = [
-    :DN_HistogramMode_5 # These shouldn't change between versions of catch22
+    :DN_HistogramMode_5
     :DN_HistogramMode_10
     :CO_Embed2_Dist_tau_d_expfit_meandiff
     :CO_f1ecac
@@ -31,7 +31,7 @@ const featuretypes = Dict(featurenames .=> [
                                     #CO_Embed2_Dist_tau_d_expfit_meandiff
                                     Cdouble
                                     #CO_f1ecac
-                                    Cint
+                                    Cdouble
                                     #CO_FirstMin_ac
                                     Cint
                                     #CO_HistogramAMI_even_2_5
