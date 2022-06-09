@@ -7,7 +7,7 @@ version = v"0.3.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/chlubba/catch22.git", "96fc2c39f1f3dee0ca990667f999469754760af0")
+    GitSource("https://github.com/chlubba/catch22.git", "854d7a022f4aeefbebd771d70cd03bcc020e5312")
 ]
 
 # Bash recipe for building across all platforms
