@@ -24,6 +24,15 @@ include("TimeseriesFeatures.jl")
 catch22_jll.__init__() # Initialise the C library
 
 zscore(𝐱::AbstractVector) = (𝐱 .- mean(𝐱))./(std(𝐱))
+nancheck(𝐱::AbstractVector) = any(isinf.(𝐱)) || any(isnan.(𝐱)) || length(𝐱) < 3
+
+function _ccall(fName::Symbol, ::Type{T}) where T<:Integer
+    f(𝐱)::T = ccall(dlsym(dlopen(ccatch22), fName), Cint, (Ptr{Array{Cint}},Cint), 𝐱, Int(size(𝐱, 1)))
+end
+function _ccall(fName::Symbol, ::Type{T}) where T<:AbstractFloat
+    f(𝐱)::T = ccall(dlsym(dlopen(ccatch22), fName), Cdouble, (Ptr{Array{Cdouble}},Cint), 𝐱, Int(size(𝐱, 1)))
+end
+
 
 """
     _catch22(𝐱::AbstractArray{Float64}, fName::Symbol)
@@ -36,17 +45,11 @@ Evaluate the feature `fName` on the single time series `𝐱`. See `Catch22.feat
 Catch22._catch22(𝐱, :DN_HistogramMode_5)
 ```
 """
-function _catch22(𝐱::AbstractVector, fName::Symbol)::Float64
-    if any(isinf.(𝐱)) || any(isnan.(𝐱)) || length(𝐱) < 3
-        return NaN
-    end
+function _catch22(𝐱::AbstractVector, fName::Symbol)
+    nancheck(𝐱) && return NaN
     𝐱 = 𝐱 |> zscore |> Vector{Float64}
     fType = featuretypes[fName]
-    if fType <: AbstractFloat
-        ccall(dlsym(dlopen(ccatch22), fName), Cdouble, (Ptr{Array{Cdouble}},Cint), 𝐱, Int(size(𝐱, 1)))
-    elseif fType <: Integer
-        ccall(dlsym(dlopen(ccatch22), fName), Cint, (Ptr{Array{Cdouble}},Cint), 𝐱, Int(size(𝐱, 1)))
-    end
+    return _ccall(fName, fType)(𝐱)
 end
 function _catch22(X::AbstractArray{Float64, 2}, fName::Symbol)::AbstractArray{Float64, 2}
     mapslices(𝐱 -> _catch22(𝐱, fName), X, dims=[1])
@@ -93,5 +96,22 @@ f = DN_HistogramMode_5(𝐱)
 ```
 """
 DN_HistogramMode_5;
+
+# Special cases for DN_Mean and DN_Spread_Std, and shouldn't standardize the vector
+DN_Mean(𝐱::AbstractVector)::Float64 = nancheck(𝐱) ? NaN : (𝐱 |> _ccall(:DN_Mean, Cdouble))
+DN_Spread_Std(𝐱::AbstractVector)::Float64 = nancheck(𝐱) ? NaN : (𝐱 |> _ccall(:DN_Spread_Std, Cdouble))
+catch24 = catch22 + FeatureSet( [DN_Mean, DN_Spread_Std],
+                                [:DN_Mean, :DN_Spread_Std],
+                                [   ["distribution", "location", "raw"],
+                                    ["distribution", "spread", "raw"]],
+                                [   "Mean of time-series values",
+                                    "Sample standard deviation of time-series values"])
+export catch24, DN_Mean, DN_Spread_Std
+
+"""
+    catch24 isa FeatureSet
+A feature set containing all `catch22` features, in addition to the mean (`DN_Mean`) and standard deviation (`DN_Spread_Std`). See `catch22`.
+"""
+catch24
 
 end
