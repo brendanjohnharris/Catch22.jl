@@ -16,4 +16,4 @@ F = FeatureArray(fill(NaN, length(catch22), length(X)), catch22);
     F[:, x] = catch22(Float64.(X[x]))
 end
 
-covarianceimage(mapslices(Catch22.zscore, F, dims=2), background_color_legend=nothing, foreground_color_legend=nothing, colorbar_title="|r|", colormode=:top, dpi=600)
+covarianceimage(mapslices(Catch22.standardize, F, dims=2), background_color_legend=nothing, foreground_color_legend=nothing, colorbar_title="|r|", colormode=:top, dpi=600)

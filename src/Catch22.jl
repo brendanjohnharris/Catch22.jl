@@ -12,6 +12,9 @@ function __init__()
             @eval include("CovarianceImage.jl")
         end
     end
+    @require StatsBase="2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91" begin
+        @eval include("Autocorrelations.jl")
+    end
 end
 
 include("Feature.jl")
@@ -19,11 +22,10 @@ include("FeatureSet.jl")
 include("FeatureArray.jl")
 include("metadata.jl")
 include("testdata.jl")
-include("TimeseriesFeatures.jl")
 
 catch22_jll.__init__() # Initialise the C library
 
-zscore(𝐱::AbstractVector) = (𝐱 .- mean(𝐱))./(std(𝐱))
+standardize(𝐱::AbstractVector) = (𝐱 .- mean(𝐱))./(std(𝐱))
 nancheck(𝐱::AbstractVector) = any(isinf.(𝐱)) || any(isnan.(𝐱)) || length(𝐱) < 3
 
 function _ccall(fName::Symbol, ::Type{T}) where T<:Integer
@@ -47,7 +49,7 @@ Catch22._catch22(𝐱, :DN_HistogramMode_5)
 """
 function _catch22(𝐱::AbstractVector, fName::Symbol)
     nancheck(𝐱) && return NaN
-    𝐱 = 𝐱 |> zscore |> Vector{Float64}
+    𝐱 = 𝐱 |> standardize |> Vector{Float64}
     fType = featuretypes[fName]
     return _ccall(fName, fType)(𝐱)
 end

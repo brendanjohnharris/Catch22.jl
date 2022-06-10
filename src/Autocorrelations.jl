@@ -1,4 +1,4 @@
-using StatsBase
+using .StatsBase
 
 lags = 1:40
 # ! A bit of overhead here...
