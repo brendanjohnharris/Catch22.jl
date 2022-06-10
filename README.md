@@ -47,3 +47,8 @@ A `FeatureArray` has most of the properties and methods of an Array but is annot
 If a vector is provided (a single time series) then a vector of feature values will be returned as a `FeatureVector`, a one-dimensional `FeatureArray`.
 
 Finally, note that since `catch22` is a `FeatureSet` it can be indexed with a vector of feature names as symbols to calculate a `FeatureArray` for a subset of _catch22_. For details on the `Feature`, `FeatureSet` and `FeatureArray` types check out the package docstrings.
+
+<br>
+
+# Single-threaded performance
+![scaling](scaling.png)

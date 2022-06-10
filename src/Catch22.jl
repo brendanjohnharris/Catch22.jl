@@ -25,7 +25,7 @@ include("testdata.jl")
 
 catch22_jll.__init__() # Initialise the C library
 
-standardize(𝐱::AbstractVector) = (𝐱 .- mean(𝐱))./(std(𝐱))
+z_score(𝐱::AbstractVector) = (𝐱 .- mean(𝐱))./(std(𝐱))
 nancheck(𝐱::AbstractVector) = any(isinf.(𝐱)) || any(isnan.(𝐱)) || length(𝐱) < 3
 
 function _ccall(fName::Symbol, ::Type{T}) where T<:Integer
@@ -49,7 +49,7 @@ Catch22._catch22(𝐱, :DN_HistogramMode_5)
 """
 function _catch22(𝐱::AbstractVector, fName::Symbol)
     nancheck(𝐱) && return NaN
-    𝐱 = 𝐱 |> standardize |> Vector{Float64}
+    𝐱 = 𝐱 |> z_score |> Vector{Float64}
     fType = featuretypes[fName]
     return _ccall(fName, fType)(𝐱)
 end
@@ -99,7 +99,7 @@ f = DN_HistogramMode_5(𝐱)
 """
 DN_HistogramMode_5;
 
-# Special cases for DN_Mean and DN_Spread_Std, and shouldn't standardize the vector
+# Special cases for DN_Mean and DN_Spread_Std, and shouldn't z_score the vector
 DN_Mean(𝐱::AbstractVector)::Float64 = nancheck(𝐱) ? NaN : (𝐱 |> _ccall(:DN_Mean, Cdouble))
 DN_Spread_Std(𝐱::AbstractVector)::Float64 = nancheck(𝐱) ? NaN : (𝐱 |> _ccall(:DN_Spread_Std, Cdouble))
 catch24 = catch22 + FeatureSet( [DN_Mean, DN_Spread_Std],
@@ -112,7 +112,7 @@ export catch24, DN_Mean, DN_Spread_Std
 
 """
     catch24 isa FeatureSet
-A feature set containing all `catch22` features, in addition to the mean (`DN_Mean`) and standard deviation (`DN_Spread_Std`). See `catch22`.
+A feature set containing the mean (`DN_Mean`) and standard deviation (`DN_Spread_Std`) in addition to all `catch22` features. See `catch22`.
 """
 catch24
 
