@@ -1,14 +1,22 @@
+@reexport module FeatureArrays
+import ..Features: AbstractFeature, getname
+import ..FeatureSets: getnames, AbstractFeatureSet
+using ProgressLogging
 using DimensionalData
 import DimensionalData: dims, refdims, data, name, metadata, rebuild, parent, AbstractDimArray, NoName
 import DimensionalData.Dimensions: AnonDim, format, LookupArrays.NoMetadata
-import Base.Array
+import Base: Array, getindex, setindex!
+
+export  AbstractFeatureArray, AbstractFeatureVector, AbstractFeatureMatrix,
+        FeatureArray, FeatureVector, FeatureMatrix,
+        getdim, setdim
+
+
 
 abstract type AbstractFeatureArray{T,N,D,A} <: AbstractDimArray{T,N,D,A} end
-export AbstractFeatureArray
 
 AbstractFeatureVector = AbstractFeatureArray{T, 1} where {T}
 AbstractFeatureMatrix = AbstractFeatureArray{T, 2} where {T}
-export AbstractFeatureVector, AbstractFeatureMatrix
 
 
 """
@@ -31,7 +39,6 @@ struct FeatureArray{T,N,D<:Tuple,R<:Tuple,A<:AbstractArray{T,N},Na,Me} <: Abstra
     name::Na
     metadata::Me
 end
-export FeatureArray
 
 function FeatureArray(data::A, dims::D, refdims::R=(), name::Na=NoName()) where {D,R,A,Na}
     if typeof(dims[1]) <: Dim{:feature, Vector{Symbol}}
@@ -100,9 +107,6 @@ F = FeatureMatrix(data, [:sum, :length], [1, 2, 3])
 ```
 """
 FeatureMatrix = FeatureArray{T, 2} where {T}
-featureMatrix = FeatureMatrix
-export FeatureMatrix, featureMatrix
-
 
 """
     FeatureArray{T, 1} where {T}
@@ -116,8 +120,6 @@ data = randn(2) # Feature values for 1 time series
 ```
 """
 FeatureVector = FeatureArray{T, 1} where {T}
-featureVector = FeatureVector
-export FeatureVector, featureVector
 
 FeatureArray(X::AbstractArray, 𝒇::AbstractFeatureSet) = FeatureArray(X::AbstractArray, getnames(𝒇))
 
@@ -125,7 +127,6 @@ FeatureArray(X::AbstractArray, 𝒇::AbstractFeatureSet) = FeatureArray(X::Abstr
 
 
 getdim(X::AbstractDimArray, dim) = dims(X, dim).val
-export getdim
 
 """
     getnames(𝒇::FeatureArray)
@@ -133,7 +134,6 @@ Get the names of features represented in the feature vector or array 𝒇 as a v
 """
 featureDims(A::AbstractDimArray) = getdim(A, :feature)
 getnames(A::AbstractFeatureArray) = featureDims(A)
-export getnames
 
 timeseriesDims(A::AbstractDimArray) = getdim(A, :timeseries)
 
@@ -144,12 +144,31 @@ function setdim(F::DimArray, dim, vals...)::DimArray
     DimArray(F, Tuple(dimvec)) # * Much faster to leave F as a DimArray rather than Array(F)
 end
 setdim(F::AbstractFeatureArray, args...) = FeatureArray(setdim(DimArray(F), args...))
-export setdim
 
 function sortbydim(F::AbstractDimArray, dim; rev=false)
-    sdim = Catch22.getdim(F, dim)
+    sdim = FeatureArrays.getdim(F, dim)
     idxs = sortperm(sdim; rev)
     indx = [collect(1:size(F, i)) for i ∈ 1:ndims(F)]
     indx[dim] = idxs
     return F[indx...]
 end
+
+
+(𝒇::AbstractFeatureSet)(x::AbstractVector) = FeatureVector([𝑓(x) for 𝑓 ∈ 𝒇], 𝒇)
+
+function (𝒇::AbstractFeatureSet)(X::AbstractArray)
+    F = Array{Float64}(undef, (length(𝒇), size(X)[2:end]...))
+    threadlog = 0
+    threadmax = prod(size(F)[2:end])/Threads.nthreads()
+    @withprogress name="catch22" begin
+        Threads.@threads for i ∈ CartesianIndices(size(F)[2:end])
+            F[:, Tuple(i)...] = vec(𝒇(X[:, Tuple(i)...]))
+            Threads.threadid() == 1 && (threadlog += 1)%50 == 0 && @logprogress threadlog/threadmax
+        end
+    end
+    FeatureArray(F, 𝒇)
+end
+
+(𝒇::AbstractFeatureSet)(X::AbstractDimArray) = FeatureArray(𝒇(Array(X)), (Dim{:feature}(getnames(𝒇)), dims(X)[2:end]...))
+
+end # module

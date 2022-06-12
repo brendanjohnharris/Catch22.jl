@@ -3,6 +3,7 @@ using catch22_jll
 using DimensionalData
 using Libdl
 using Requires
+using Reexport
 using LinearAlgebra
 import Statistics: mean, std, cov
 
@@ -17,9 +18,9 @@ function __init__()
     end
 end
 
-include("Feature.jl")
-include("FeatureSet.jl")
-include("FeatureArray.jl")
+include("Features.jl")
+include("FeatureSets.jl")
+include("FeatureArrays.jl")
 include("metadata.jl")
 include("testdata.jl")
 

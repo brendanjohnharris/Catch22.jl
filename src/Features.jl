@@ -1,7 +1,14 @@
+@reexport module Features
+using DimensionalData
 import Base: ==, show, hash
+export  AbstractFeature,
+        Feature,
+        getmethod,
+        getname,
+        getkeywords,
+        getdescription
 
 abstract type AbstractFeature <: Function end
-export AbstractFeature
 
 """
     𝑓 = Feature(method::Function, name=Symbol(method), keywords="", description="")
@@ -26,14 +33,12 @@ struct Feature <: AbstractFeature
     Feature(method::Function, name=Symbol(method), keywords=[""], description="") = new(method, name, keywords, description)
 end
 Feature(args...) = Feature{Float64}(args...)
-export Feature
 
 getmethod(𝑓::AbstractFeature) = 𝑓.method
 getname(𝑓::AbstractFeature) = 𝑓.name
 getnames(𝑓::AbstractFeature) = [𝑓.name]
 getkeywords(𝑓::AbstractFeature) = 𝑓.keywords
 getdescription(𝑓::AbstractFeature) = 𝑓.description
-export getmethod, getname, getkeywords, getdescription
 
 (𝑓::AbstractFeature)(x::AbstractVector)  = getmethod(𝑓)(x)
 (𝑓::AbstractFeature)(X::AbstractArray) = mapslices(getmethod(𝑓), X; dims=1)
@@ -47,3 +52,5 @@ formatshort(𝑓::AbstractFeature) = ":"*string(getname(𝑓))*" "
 show(𝑓::AbstractFeature) = print(formatshort(𝑓))
 show(io::IO, 𝑓::AbstractFeature) = print(io, formatshort(𝑓))
 show(io::IO, m::MIME"text/plain", 𝑓::AbstractFeature) = printstyled(io, formatshort(𝑓), color=:light_blue)
+
+end # module

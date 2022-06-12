@@ -1,8 +1,13 @@
-using ProgressLogging
+@reexport module FeatureSets
+import ..Features: AbstractFeature, Feature, getname, getkeywords, getdescription
+using DimensionalData
 import Base: size, getindex, setindex!, similar, eltype, deleteat!, filter, union, intersect, convert, promote_rule, +, \
 
+export  AbstractFeatureSet, FeatureSet,
+        getfeatures, getmethods, getnames, getkeywords, getdescriptions
+
+
 abstract type AbstractFeatureSet <: AbstractVector{Function} end
-export AbstractFeatureSet
 
 """
     FeatureSet(methods, [names, keywords, descriptions])
@@ -50,14 +55,11 @@ FeatureSet( methods::Function,
 
 FeatureSet(f::AbstractFeature) = FeatureSet([f])
 
-export FeatureSet
-
 getfeatures(𝒇::AbstractFeatureSet) = 𝒇.features
 getmethods(𝒇::AbstractFeatureSet)  = getmethod.(𝒇)
 getnames(𝒇::AbstractFeatureSet)  = getname.(𝒇)
 getkeywords(𝒇::AbstractFeatureSet)  = getkeywords.(𝒇)
 getdescriptions(𝒇::AbstractFeatureSet)  = getdescription.(𝒇)
-export getfeatures, getmethods, getnames, getkeywords, getdescriptions
 
 size(𝒇::AbstractFeatureSet) = size(getfeatures(𝒇))
 
@@ -103,22 +105,6 @@ for p ∈ [:+, :\, :union, :intersect]
     end)
 end
 
-(𝒇::AbstractFeatureSet)(x::AbstractVector) = FeatureVector([𝑓(x) for 𝑓 ∈ 𝒇], 𝒇)
-
-
-function (𝒇::AbstractFeatureSet)(X::AbstractArray)
-    F = Array{Float64}(undef, (length(𝒇), size(X)[2:end]...))
-    threadlog = 0
-    threadmax = prod(size(F)[2:end])/Threads.nthreads()
-    @withprogress name="catch22" begin
-        Threads.@threads for i ∈ CartesianIndices(size(F)[2:end])
-            F[:, Tuple(i)...] = vec(𝒇(X[:, Tuple(i)...]))
-            Threads.threadid() == 1 && (threadlog += 1)%50 == 0 && @logprogress threadlog/threadmax
-        end
-    end
-    FeatureArray(F, 𝒇)
-end
-
-(𝒇::AbstractFeatureSet)(X::AbstractDimArray) = FeatureArray(𝒇(Array(X)), (Dim{:feature}(getnames(𝒇)), dims(X)[2:end]...))
-
 (𝒇::AbstractFeatureSet)(x, f::Symbol) = 𝒇[f](x)
+
+end # module
