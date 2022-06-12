@@ -1,4 +1,19 @@
 using DelimitedFiles
+using Pkg.Artifacts
+
+artifact_toml = pkgdir(Catch22, "Artifacts.toml")
+test_hash = artifact_hash("testdata", artifact_toml)
+
+if test_hash == nothing || !artifact_exists(test_hash)
+    test_hash = create_artifact() do artifact_dir
+        test_url_base = "https://raw.githubusercontent.com/DynamicsAndNeuralSystems/catch22/854d7a022f4aeefbebd771d70cd03bcc020e5312/testData/" # v0.3.1
+        testfiles = ["test.txt", "test2.txt", "testInf.txt", "testInfMinus.txt", "testNaN.txt", "testShort.txt", "testSinusoid.txt", "test_output.txt", "test2_output.txt", "testShort_output.txt", "testSinusoid_output.txt"]
+        [download("$(test_url_base)/$f", joinpath(artifact_dir, f)) for f in testfiles]
+    end
+    bind_artifact!(artifact_toml, "testdata", test_hash)
+end
+
+test_datadir = artifact_path(test_hash)
 
 const testnames = [
     :test
@@ -10,9 +25,9 @@ const testnames = [
     :testSinusoid
 ]
 
-loaddata(x) = reduce(vcat, readdlm(normpath(joinpath(@__DIR__, "../test/testData", String(x)*".txt")), ' ', Float64, '\n'))
+loaddata(x) = reduce(vcat, readdlm(normpath(joinpath(test_datadir, String(x)*".txt")), ' ', Float64, '\n'))
 function loadoutput(x)
-    file = normpath(joinpath(@__DIR__, "../test/testData", String(x)*"_output.txt"))
+    file = normpath(joinpath(test_datadir, String(x)*"_output.txt"))
     if isfile(file)
         out = readdlm(file, ',', comments=true)
         return Dict([Symbol(x[2][2:end])=>x[1] for x in eachrow(out)])
