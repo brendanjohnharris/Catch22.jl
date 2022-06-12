@@ -1,3 +1,2 @@
 [deps]
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
-Catch22 = "0b325660-c155-474b-b0c5-aee57a11d6da"
