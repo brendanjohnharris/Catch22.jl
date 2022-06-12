@@ -13,8 +13,8 @@ abstract type AbstractFeatureSet <: AbstractVector{Function} end
     FeatureSet(methods, [names, keywords, descriptions])
     FeatureSet(features::Vector{T}) where {T <: AbstractFeature}
 
-Construct a `FeatureSet` from `methods` (a vector of functions) and optionally provide `names` as a vector of symbols, `keywords` as a vector of vectors of strings and `descriptions` as a vector of strings.
-A `FeatureSet` can be called on a time series vector or matrix `X` (with time series occupying columns) to return a `FeatureArray` of feature values.
+Construct a `FeatureSet` from `methods` (a vector of functions) and optionally provide `names` as a vector of symbols, `keywords` as a vector of vectors of strings, and `descriptions` as a vector of strings.
+A `FeatureSet` can be called on a time-series vector or matrix `X` (with time series occupying columns) to return a `FeatureArray` of feature values.
 Subsets of a `FeatureSet` `𝒇` can be obtained by indexing with feature names (as symbols) or the regular linear and logical indices.
 `FeatureSet`s also support simple set operations defined for arrays, such as unions and intersections, as well as convenient syntax for concatenation (`+`) and set differencing (`\\`).
 Note that two features are considered the same if and only if their names are equal.

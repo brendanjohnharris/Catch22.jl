@@ -4,7 +4,7 @@ using Documenter
 DocMeta.setdocmeta!(Catch22, :DocTestSetup, :(using Catch22); recursive=true)
 
 makedocs(;
-    modules=[Catch22],
+    modules=[Catch22, Features],
     authors="brendanjohnharris <brendanjohnharris@gmail.com> and contributors",
     repo="https://github.com/brendanjohnharris/Catch22.jl/blob/{commit}{path}#{line}",
     sitename="Catch22.jl",
@@ -15,5 +15,8 @@ makedocs(;
     ),
     pages=[
         "Home" => "index.md",
+        "Features" => "features.md",
+        "FeatureSets" => "featuresets.md",
+        "FeatureArrays" => "featurearrays.md",
     ],
 )
