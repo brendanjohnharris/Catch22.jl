@@ -1,4 +1,5 @@
 # Catch22.jl
+[![](https://img.shields.io/badge/docs-dev-blue.svg)](https://brendanjohnharris.github.io/Catch22.jl/dev)
 [![DOI](https://zenodo.org/badge/342070622.svg)](https://zenodo.org/badge/latestdoi/342070622)
 ![build](https://github.com/brendanjohnharris/Catch22.jl/actions/workflows/CI.yml/badge.svg)
 
@@ -46,7 +47,7 @@ If an array is provided, containing one time series in each of N columns, then a
 A `FeatureArray` has most of the properties and methods of an Array but is annotated with feature names that can be accessed with `getnames(F)`.
 If a vector is provided (a single time series) then a vector of feature values will be returned as a `FeatureVector`, a one-dimensional `FeatureArray`.
 
-Finally, note that since `catch22` is a `FeatureSet` it can be indexed with a vector of feature names as symbols to calculate a `FeatureArray` for a subset of _catch22_. For details on the `Feature`, `FeatureSet` and `FeatureArray` types check out the package docstrings.
+Finally, note that since `catch22` is a `FeatureSet` it can be indexed with a vector of feature names as symbols to calculate a `FeatureArray` for a subset of _catch22_. For details on the `Feature`, `FeatureSet` and `FeatureArray` types check out the package docs.
 
 <br>
 

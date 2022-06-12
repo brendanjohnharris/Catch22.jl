@@ -20,3 +20,7 @@ makedocs(;
         "FeatureArrays" => "featurearrays.md",
     ],
 )
+
+deploydocs(
+    repo = "github.com/brendanjohnharris/Catch22.jl.git",
+)
