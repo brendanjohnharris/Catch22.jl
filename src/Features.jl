@@ -48,9 +48,25 @@ getdescription(𝑓::AbstractFeature) = 𝑓.description
 hash(𝑓::AbstractFeature, h::UInt) = hash(𝑓.name, h)
 (==)(𝑓::AbstractFeature, 𝑓′::AbstractFeature) = hash(𝑓) == hash(𝑓′)
 
-formatshort(𝑓::AbstractFeature) = ":"*string(getname(𝑓))*" "
-show(𝑓::AbstractFeature) = print(formatshort(𝑓))
-show(io::IO, 𝑓::AbstractFeature) = print(io, formatshort(𝑓))
-show(io::IO, m::MIME"text/plain", 𝑓::AbstractFeature) = printstyled(io, formatshort(𝑓), color=:light_blue)
+commasep(x) = (y=fill(", ", 2*length(x)-1); y[1:2:end] .= x; y)
+formatshort(𝑓::AbstractFeature)=  [string(typeof(𝑓))*" ",
+                                   string(getname(𝑓)),
+                                   " with fields:\n",
+                                   "description: ",
+                                   getdescription(𝑓),
+                                   "\n$(repeat(' ', 3))keywords: ",
+                                   "$(commasep(getkeywords(𝑓))...)"]
+show(𝑓::AbstractFeature) = print(formatshort(𝑓)...)
+show(io::IO, 𝑓::AbstractFeature) = print(io, formatshort(𝑓...))
+function show(io::IO, m::MIME"text/plain", 𝑓::AbstractFeature)
+    s = formatshort(𝑓)
+    printstyled(io, s[1])
+    printstyled(io, s[2], color=:light_blue, bold=true)
+    printstyled(io, s[3])
+    printstyled(io, s[4], color=:magenta)
+    printstyled(io, s[5])
+    printstyled(io, s[6], color=:yellow)
+    printstyled(io, s[7])
+end
 
 end # module
