@@ -11,7 +11,7 @@ export  AbstractFeature,
 abstract type AbstractFeature <: Function end
 
 """
-    𝑓 = Feature(method::Function, name=Symbol(method), keywords="", description="")
+    𝑓 = Feature([;] method::Function, name=Symbol(method), description="", keywords="")
 
 Construct a `Feature`, which is a function annotated with a `name`, `keywords` and short `description`.
 Features can be called as functions while `getname(𝑓)`, `getkeywords(𝑓)` and `getdescription(𝑓)` can be used to access the annotations.
@@ -25,14 +25,15 @@ The method on vectors will be applied column-wise to `Matrix` inputs, regardless
 getdescription(𝑓) # "Sum of time-series values"
 ```
 """
-struct Feature <: AbstractFeature
+Base.@kwdef struct Feature <: AbstractFeature
     method::Function
-    name::Symbol
-    keywords::Vector{String}
-    description::String
-    Feature(method::Function, name=Symbol(method), keywords=[""], description="") = new(method, name, keywords, description)
+    name::Symbol = Symbol(method)
+    description::String = ""
+    keywords::Vector{String} = [""]
 end
-Feature(args...) = Feature{Float64}(args...)
+Feature(method::Function, name=Symbol(method), keywords::Vector{String}=[""], description::String="") = Feature(; method, name, keywords, description)
+Feature(method::Function, name, description::String, keywords::Vector{String}=[""]) = Feature(; method, name, keywords, description)
+
 
 getmethod(𝑓::AbstractFeature) = 𝑓.method
 getname(𝑓::AbstractFeature) = 𝑓.name
@@ -49,17 +50,18 @@ hash(𝑓::AbstractFeature, h::UInt) = hash(𝑓.name, h)
 (==)(𝑓::AbstractFeature, 𝑓′::AbstractFeature) = hash(𝑓) == hash(𝑓′)
 
 commasep(x) = (y=fill(", ", 2*length(x)-1); y[1:2:end] .= x; y)
-formatshort(𝑓::AbstractFeature)=  [string(typeof(𝑓))*" ",
+formatshort(𝑓::AbstractFeature) = [string(getname(𝑓)), " $(getdescription(𝑓))"]
+formatlong(𝑓::AbstractFeature)=  [ string(typeof(𝑓))*" ",
                                    string(getname(𝑓)),
                                    " with fields:\n",
                                    "description: ",
                                    getdescription(𝑓),
                                    "\n$(repeat(' ', 3))keywords: ",
                                    "$(commasep(getkeywords(𝑓))...)"]
-show(𝑓::AbstractFeature) = print(formatshort(𝑓)...)
-show(io::IO, 𝑓::AbstractFeature) = print(io, formatshort(𝑓...))
+show(𝑓::AbstractFeature) = print(formatlong(𝑓)...)
+show(io::IO, 𝑓::AbstractFeature) = print(io, formatlong(𝑓)...)
 function show(io::IO, m::MIME"text/plain", 𝑓::AbstractFeature)
-    s = formatshort(𝑓)
+    s = formatlong(𝑓)
     printstyled(io, s[1])
     printstyled(io, s[2], color=:light_blue, bold=true)
     printstyled(io, s[3])

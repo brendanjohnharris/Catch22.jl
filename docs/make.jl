@@ -16,8 +16,8 @@ makedocs(;
     pages=[
         "Home" => "index.md",
         "Features" => "features.md",
-        "FeatureSets" => "featuresets.md",
-        "FeatureArrays" => "featurearrays.md",
+        "Feature Sets" => "featuresets.md",
+        "Feature Arrays" => "featurearrays.md",
     ],
 )
 

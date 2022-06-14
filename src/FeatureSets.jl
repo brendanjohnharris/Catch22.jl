@@ -1,7 +1,7 @@
 @reexport module FeatureSets
-import ..Features: AbstractFeature, Feature, getname, getkeywords, getdescription
+import ..Features: AbstractFeature, Feature, getname, getkeywords, getdescription, formatshort
 using DimensionalData
-import Base: size, getindex, setindex!, similar, eltype, deleteat!, filter, union, intersect, convert, promote_rule, +, \
+import Base: show, size, getindex, setindex!, similar, eltype, deleteat!, filter, union, intersect, convert, promote_rule, +, \
 
 export  AbstractFeatureSet, FeatureSet,
         getfeatures, getmethods, getnames, getkeywords, getdescriptions
@@ -41,18 +41,9 @@ struct FeatureSet <: AbstractFeatureSet
     FeatureSet(features::Vector{T}) where {T <: AbstractFeature} = new(features)
 end
 
-FeatureSet( methods::AbstractVector,
-            names=Symbol.(methods),
-            keywords=fill([], length(methods)),
-            descriptions=fill("", length(methods))) =
-            FeatureSet(Feature.(methods, names, keywords, descriptions))
-
-FeatureSet( methods::Function,
-            names=Symbol(methods),
-            keywords=[],
-            descriptions="") =
-            FeatureSet([Feature(methods, names, keywords, descriptions)])
-
+FeatureSet(methods::AbstractVector{<:Function}, args...) = Feature.(methods, args...) |> FeatureSet
+FeatureSet(methods::Function, args...) = [Feature(methods, args...)] |> FeatureSet
+FeatureSet(; methods, names, keywords, descriptions) = FeatureSet(methods, names, keywords, descriptions)
 FeatureSet(f::AbstractFeature) = FeatureSet([f])
 
 getfeatures(𝒇::AbstractFeatureSet) = 𝒇.features
@@ -106,5 +97,23 @@ for p ∈ [:+, :\, :union, :intersect]
 end
 
 (𝒇::AbstractFeatureSet)(x, f::Symbol) = 𝒇[f](x)
+
+format(𝒇::AbstractFeatureSet) = "$(typeof(𝒇)) with features: $(getnames(𝒇))"
+show(𝒇::AbstractFeatureSet) = 𝒇 |> format |> show
+show(io::IO, 𝒇::AbstractFeatureSet) = show((io,), 𝒇 |> format)
+function show(io::IO, m::MIME"text/plain", 𝒇::AbstractFeatureSet)
+    print("$(typeof(𝒇)) with features:\n")
+    for 𝑓 in 𝒇[1:end-1]
+        s = formatshort(𝑓)
+        print("    ")
+        printstyled(io, s[1], color=:light_blue, bold=true)
+        printstyled(io, s[2])
+        print("\n")
+    end
+    s = formatshort(𝒇[end])
+    print("    ")
+    printstyled(io, s[1], color=:light_blue, bold=true)
+    printstyled(io, s[2])
+end
 
 end # module
