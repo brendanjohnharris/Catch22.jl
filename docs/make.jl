@@ -23,5 +23,5 @@ makedocs(;
 
 deploydocs(
     repo = "github.com/brendanjohnharris/Catch22.jl.git",
-    devbranch = "docs"
+    devbranch = "main"
 )
