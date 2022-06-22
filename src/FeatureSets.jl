@@ -1,15 +1,20 @@
-using ProgressLogging
-import Base: size, getindex, setindex!, similar, eltype, deleteat!, filter, union, intersect, convert, promote_rule, +, \
+@reexport module FeatureSets
+import ..Features: AbstractFeature, Feature, getname, getkeywords, getdescription, formatshort
+using DimensionalData
+import Base: show, size, getindex, setindex!, similar, eltype, deleteat!, filter, union, intersect, convert, promote_rule, +, \
+
+export  AbstractFeatureSet, FeatureSet,
+        getfeatures, getmethods, getnames, getkeywords, getdescriptions
+
 
 abstract type AbstractFeatureSet <: AbstractVector{Function} end
-export AbstractFeatureSet
 
 """
     FeatureSet(methods, [names, keywords, descriptions])
     FeatureSet(features::Vector{T}) where {T <: AbstractFeature}
 
-Construct a `FeatureSet` from `methods` (a vector of functions) and optionally provide `names` as a vector of symbols, `keywords` as a vector of vectors of strings and `descriptions` as a vector of strings.
-A `FeatureSet` can be called on a time series vector or matrix `X` (with time series occupying columns) to return a `FeatureArray` of feature values.
+Construct a `FeatureSet` from `methods` (a vector of functions) and optionally provide `names` as a vector of symbols, `keywords` as a vector of vectors of strings, and `descriptions` as a vector of strings.
+A `FeatureSet` can be called on a time-series vector or matrix `X` (with time series occupying columns) to return a `FeatureArray` of feature values.
 Subsets of a `FeatureSet` `𝒇` can be obtained by indexing with feature names (as symbols) or the regular linear and logical indices.
 `FeatureSet`s also support simple set operations defined for arrays, such as unions and intersections, as well as convenient syntax for concatenation (`+`) and set differencing (`\\`).
 Note that two features are considered the same if and only if their names are equal.
@@ -36,28 +41,16 @@ struct FeatureSet <: AbstractFeatureSet
     FeatureSet(features::Vector{T}) where {T <: AbstractFeature} = new(features)
 end
 
-FeatureSet( methods::AbstractVector,
-            names=Symbol.(methods),
-            keywords=fill([], length(methods)),
-            descriptions=fill("", length(methods))) =
-            FeatureSet(Feature.(methods, names, keywords, descriptions))
-
-FeatureSet( methods::Function,
-            names=Symbol(methods),
-            keywords=[],
-            descriptions="") =
-            FeatureSet([Feature(methods, names, keywords, descriptions)])
-
+FeatureSet(methods::AbstractVector{<:Function}, args...) = Feature.(methods, args...) |> FeatureSet
+FeatureSet(methods::Function, args...) = [Feature(methods, args...)] |> FeatureSet
+FeatureSet(; methods, names, keywords, descriptions) = FeatureSet(methods, names, keywords, descriptions)
 FeatureSet(f::AbstractFeature) = FeatureSet([f])
-
-export FeatureSet
 
 getfeatures(𝒇::AbstractFeatureSet) = 𝒇.features
 getmethods(𝒇::AbstractFeatureSet)  = getmethod.(𝒇)
 getnames(𝒇::AbstractFeatureSet)  = getname.(𝒇)
 getkeywords(𝒇::AbstractFeatureSet)  = getkeywords.(𝒇)
 getdescriptions(𝒇::AbstractFeatureSet)  = getdescription.(𝒇)
-export getfeatures, getmethods, getnames, getkeywords, getdescriptions
 
 size(𝒇::AbstractFeatureSet) = size(getfeatures(𝒇))
 
@@ -103,22 +96,24 @@ for p ∈ [:+, :\, :union, :intersect]
     end)
 end
 
-(𝒇::AbstractFeatureSet)(x::AbstractVector) = FeatureVector([𝑓(x) for 𝑓 ∈ 𝒇], 𝒇)
+(𝒇::AbstractFeatureSet)(x, f::Symbol) = 𝒇[f](x)
 
-
-function (𝒇::AbstractFeatureSet)(X::AbstractArray)
-    F = Array{Float64}(undef, (length(𝒇), size(X)[2:end]...))
-    threadlog = 0
-    threadmax = prod(size(F)[2:end])/Threads.nthreads()
-    @withprogress name="catch22" begin
-        Threads.@threads for i ∈ CartesianIndices(size(F)[2:end])
-            F[:, Tuple(i)...] = vec(𝒇(X[:, Tuple(i)...]))
-            Threads.threadid() == 1 && (threadlog += 1)%50 == 0 && @logprogress threadlog/threadmax
-        end
+format(𝒇::AbstractFeatureSet) = "$(typeof(𝒇)) with features: $(getnames(𝒇))"
+show(𝒇::AbstractFeatureSet) = 𝒇 |> format |> show
+show(io::IO, 𝒇::AbstractFeatureSet) = show((io,), 𝒇 |> format)
+function show(io::IO, m::MIME"text/plain", 𝒇::AbstractFeatureSet)
+    print("$(typeof(𝒇)) with features:\n")
+    for 𝑓 in 𝒇[1:end-1]
+        s = formatshort(𝑓)
+        print("    ")
+        printstyled(io, s[1], color=:light_blue, bold=true)
+        printstyled(io, s[2])
+        print("\n")
     end
-    FeatureArray(F, 𝒇)
+    s = formatshort(𝒇[end])
+    print("    ")
+    printstyled(io, s[1], color=:light_blue, bold=true)
+    printstyled(io, s[2])
 end
 
-(𝒇::AbstractFeatureSet)(X::AbstractDimArray) = FeatureArray(𝒇(Array(X)), (Dim{:feature}(getnames(𝒇)), dims(X)[2:end]...))
-
-(𝒇::AbstractFeatureSet)(x, f::Symbol) = 𝒇[f](x)
+end # module

@@ -3,6 +3,7 @@ using catch22_jll
 using DimensionalData
 using Libdl
 using Requires
+using Reexport
 using LinearAlgebra
 import Statistics: mean, std, cov
 
@@ -17,9 +18,9 @@ function __init__()
     end
 end
 
-include("Feature.jl")
-include("FeatureSet.jl")
-include("FeatureArray.jl")
+include("Features.jl")
+include("FeatureSets.jl")
+include("FeatureArrays.jl")
 include("metadata.jl")
 include("testdata.jl")
 
@@ -100,20 +101,17 @@ f = DN_HistogramMode_5(𝐱)
 DN_HistogramMode_5;
 
 # Special cases for DN_Mean and DN_Spread_Std, and shouldn't z_score the vector
-DN_Mean(𝐱::AbstractVector)::Float64 = nancheck(𝐱) ? NaN : (𝐱 |> _ccall(:DN_Mean, Cdouble))
-DN_Spread_Std(𝐱::AbstractVector)::Float64 = nancheck(𝐱) ? NaN : (𝐱 |> _ccall(:DN_Spread_Std, Cdouble))
-catch24 = catch22 + FeatureSet( [DN_Mean, DN_Spread_Std],
-                                [:DN_Mean, :DN_Spread_Std],
-                                [   ["distribution", "location", "raw"],
-                                    ["distribution", "spread", "raw"]],
-                                [   "Mean of time-series values",
-                                    "Sample standard deviation of time-series values"])
-export catch24, DN_Mean, DN_Spread_Std
+_DN_Mean(𝐱::AbstractVector)::Float64 = nancheck(𝐱) ? NaN : (𝐱 |> _ccall(:DN_Mean, Cdouble))
+_DN_Spread_Std(𝐱::AbstractVector)::Float64 = nancheck(𝐱) ? NaN : (𝐱 |> _ccall(:DN_Spread_Std, Cdouble))
+DN_Mean = Feature(_DN_Mean, :DN_Mean, ["distribution", "location", "raw"], "Arithmetic mean of time-series values")
+DN_Spread_Std = Feature(_DN_Spread_Std, :DN_Spread_Std, ["distribution", "spread", "raw"], "Sample standard deviation of time-series values")
 
 """
     catch24 isa FeatureSet
-A feature set containing the mean (`DN_Mean`) and standard deviation (`DN_Spread_Std`) in addition to all `catch22` features. See `catch22`.
+A feature set containing the mean (`DN_Mean`) and standard deviation (`DN_Spread_Std`) in addition to all `catch22` features. See [`catch22`](@ref).
 """
-catch24
+catch24 = catch22 + DN_Mean + DN_Spread_Std
+export catch24, DN_Mean, DN_Spread_Std
+
 
 end
