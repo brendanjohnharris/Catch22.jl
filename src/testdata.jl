@@ -6,7 +6,7 @@ test_hash = artifact_hash("testdata", artifact_toml)
 
 if test_hash == nothing || !artifact_exists(test_hash)
     test_hash = create_artifact() do artifact_dir
-        test_url_base = "https://raw.githubusercontent.com/DynamicsAndNeuralSystems/catch22/854d7a022f4aeefbebd771d70cd03bcc020e5312/testData/" # v0.3.1
+        test_url_base = "https://raw.githubusercontent.com/DynamicsAndNeuralSystems/catch22/2e1a271c6a7437b6a4a754e1adc7e34d7a224c01/testData/" # v0.4.0
         testfiles = ["test.txt", "test2.txt", "testInf.txt", "testInfMinus.txt", "testNaN.txt", "testShort.txt", "testSinusoid.txt", "test_output.txt", "test2_output.txt", "testShort_output.txt", "testSinusoid_output.txt"]
         [download("$(test_url_base)/$f", joinpath(artifact_dir, f)) for f in testfiles]
     end
