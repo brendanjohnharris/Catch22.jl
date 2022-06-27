@@ -1,5 +1,5 @@
 @reexport module FeatureArrays
-import ..Features: AbstractFeature, getname
+import ..Features: AbstractFeature, getname, getmethod
 import ..FeatureSets: getnames, AbstractFeatureSet
 using ProgressLogging
 using DimensionalData
@@ -169,6 +169,8 @@ function (𝒇::AbstractFeatureSet)(X::AbstractArray)
     FeatureArray(F, 𝒇)
 end
 
+
+(𝑓::AbstractFeature)(X::AbstractDimArray) = FeatureArray(mapslices(getmethod(𝑓), X; dims=1), (Dim{:feature}([getname(𝑓)]), dims(X)[2:end]...))
 (𝒇::AbstractFeatureSet)(X::AbstractDimArray) = FeatureArray(𝒇(Array(X)), (Dim{:feature}(getnames(𝒇)), dims(X)[2:end]...))
 
 end # module

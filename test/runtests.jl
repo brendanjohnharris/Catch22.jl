@@ -2,6 +2,7 @@ using SafeTestsets
 
 @safetestset "Catch22" begin
 using Catch22
+using Catch22.DimensionalData
 import Catch22.testdata, Catch22.testoutput, Catch22.testnames
 using Test
 
@@ -104,6 +105,13 @@ println("Testing FeatureArray indexing")
     @test F[𝑓] == F[𝑓s][end:-1:1, :, :]
     @test F[𝑓] == F[𝑓, :, :] == F[[2, 1], :, :]
     @test F[𝑓s] == F[𝑓s, :, :] == F[1:2, :, :]
+end
+
+println("Testing Feature evaluation with DimArrays")
+@testset "DimArrays" begin
+    x = DimArray(randn(100), (Dim{:x}(1:100),))
+    @test CO_f1ecac(x)[:CO_f1ecac] == CO_f1ecac(x|>vec)
+    @test catch22(x) == catch22(x|>vec)
 end
 
 
