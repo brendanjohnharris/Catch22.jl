@@ -13,7 +13,7 @@ The [_catch22_](https://www.github.com/chlubba/catch22) repository provides thes
 ## Installation
 ```Julia
 using Pkg
-Pkg.add(url="https://github.com/brendanjohnharris/Catch22.jl.git")
+Pkg.add("Catch22")
 using Catch22
 ```
 
