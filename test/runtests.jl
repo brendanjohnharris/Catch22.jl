@@ -140,13 +140,17 @@ end
 
 println("Testing Catch22 SuperFeatures")
 @testset "Catch22 SuperFeatures" begin
+    catch22² = vcat(fill(catch22, 22)...);
+    catch22_raw² = vcat(fill(Catch22.catch22_raw, 22)...);
     X = rand(1000, 10)
-    @test catch22(X) !== Catch22.catch22_raw(X)
-    @test Catch22.catch22_raw(X) !== Catch22.catch22_raw(mapslices(Catch22.z_score, X, dims=1))
-    @test catch22(X) == Catch22.catch22_raw(mapslices(Catch22.z_score, X, dims=1))
-    # @time Catch22.catch22_raw(X)
-    # @time catch22(X)
-    # @time Catch22.catch22_raw(mapslices(Catch22.z_score, X, dims=1))
+    @test catch22²(X) !== catch22_raw²(X)
+    @test catch22_raw²(X) !== catch22_raw²(mapslices(Catch22.z_score, X, dims=1))
+    @test catch22²(X) == catch22_raw²(mapslices(Catch22.z_score, X, dims=1))
+
+    # @benchmark catch22_raw²(X)
+    # @benchmark catch22²(X)
+    # @benchmark catch22_raw²(mapslices(Catch22.z_score, X, dims=1))
+    # @benchmark mapslices(Catch22.z_score, X, dims=1)
 end
 
 end
