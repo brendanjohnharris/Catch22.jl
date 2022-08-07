@@ -5,6 +5,7 @@ using Catch22
 using Catch22.DimensionalData
 import Catch22.testdata, Catch22.testoutput, Catch22.testnames
 using Test
+using StatsBase
 
 function isnearlyequalorallnan(a::AbstractArray, b::AbstractArray)
     replace!(a, NaN=>0.0)
@@ -151,6 +152,36 @@ println("Testing Catch22 SuperFeatures")
     # @benchmark catch22²(X)
     # @benchmark catch22_raw²(mapslices(Catch22.z_score, X, dims=1))
     # @benchmark mapslices(Catch22.z_score, X, dims=1)
+end
+
+println("Testing ACF and PACF")
+@testset "ACF and PACF" begin
+    X = randn(1000, 10)
+    _acf = mapslices(x->autocor(x, Catch22.ac_lags; demean=true), X; dims=1)
+    @test all(ac(X) .== _acf)
+    _pacf = mapslices(x->pacf(x, Catch22.ac_lags; method=:regression), X; dims=1)
+    @test all(partial_ac(X) .== _pacf)
+end
+
+println("Testing PACF superfeatures")
+@testset "PACF superfeatures" begin
+    X = randn(1000, 10)
+    lags = Catch22.ac_lags
+    AC_slow = FeatureSet([x->autocor(x, [ℓ]; demean=true)[1]::Float64 for ℓ ∈ lags],
+                    Symbol.(["AC_$ℓ" for ℓ ∈ lags]),
+                    [["correlation"] for ℓ ∈ lags],
+                    ["Autocorrelation at lag $ℓ" for ℓ ∈ lags])
+    AC_partial_slow = FeatureSet([x->pacf(x, [ℓ]; method=:regression)[1]::Float64 for ℓ ∈ lags],
+                    Symbol.(["AC_partial_$ℓ" for ℓ ∈ lags]),
+                    [["correlation"] for ℓ ∈ lags],
+                    ["Partial autocorrelation at lag $ℓ (regression method)" for ℓ ∈ lags])
+
+    @test all(AC_slow(X) .== ac(X))
+    @test all(AC_partial_slow(X) .== partial_ac(X))
+    println("\nFeature autocorrelation: "); @time AC_slow(X);
+    println("\nSuperFeature autocorrelation: "); @time ac(X);
+    println("\nFeature partial autocorrelation: "); @time AC_partial_slow(X);
+    println("\nSuperfeature partial autocorrelation: "); @time partial_ac(X);
 end
 
 end

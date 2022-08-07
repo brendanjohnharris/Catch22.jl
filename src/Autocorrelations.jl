@@ -1,17 +1,21 @@
 using .StatsBase
 
-lags = 1:40
-# ! A bit of overhead here...
-AC = FeatureSet([x->autocor(x, [ℓ]; demean=true)[1]::Float64 for ℓ ∈ lags],
-                Symbol.(["AC_$ℓ" for ℓ ∈ lags]),
-                [["correlation"] for ℓ ∈ lags],
-                ["Autocorrelation at lag $ℓ" for ℓ ∈ lags])
-export AC
+ac_lags = 1:40
 
-# ! Lots of overhead here; the pacf function has to recalculate for all smaller lags.
-# ! Time to think about SuperFeatures...
-AC_partial = FeatureSet([x->pacf(x, [ℓ]; method=:regression)[1]::Float64 for ℓ ∈ lags],
-                Symbol.(["AC_partial_$ℓ" for ℓ ∈ lags]),
-                [["correlation"] for ℓ ∈ lags],
-                ["Partial autocorrelation at lag $ℓ (regression method)" for ℓ ∈ lags])
-export AC_partial
+ACF = Feature(x->autocor(x, ac_lags; demean=true), :ACF, "Autocorrelation function to lag $(maximum(ac_lags))", ["autocorrelation"])
+
+ac = SuperFeatureSet([x->x[ℓ] for ℓ ∈ eachindex(ac_lags)],
+                Symbol.(["ac_$ℓ" for ℓ ∈ ac_lags]),
+                ["Autocorrelation at lag $ℓ" for ℓ ∈ ac_lags],
+                [["correlation"] for ℓ ∈ ac_lags],
+                ACF) # We compute the ACF just once, and pick off results for each feature
+export ac
+
+PACF = Feature(x->pacf(x, ac_lags; method=:regression), :ACF, "Partial autocorrelation function to lag $(maximum(ac_lags))", ["autocorrelation"])
+
+partial_ac = SuperFeatureSet([x->x[ℓ] for ℓ ∈ eachindex(ac_lags)],
+                Symbol.(["partial_ac_$ℓ" for ℓ ∈ ac_lags]),
+                ["Partial autocorrelation at lag $ℓ (regression method)" for ℓ ∈ ac_lags],
+                [["correlation"] for ℓ ∈ ac_lags],
+                PACF)
+export partial_ac

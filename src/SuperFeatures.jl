@@ -3,7 +3,7 @@
 import ..getmethod
 import ..Features: AbstractFeature, Feature
 import ..FeatureSets: AbstractFeatureSet, FeatureSet
-import ..FeatureArrays: FeatureVector
+import ..FeatureArrays: FeatureVector, AbstractDimArray, _construct, _setconstruct
 
 export  SuperFeature,
         SuperFeatureSet
@@ -20,15 +20,17 @@ SuperFeature(method::Function, name, description::String, keywords::Vector{Strin
 getsuper(𝒇::SuperFeature) = 𝒇.super
 getsuper(::AbstractFeature) = ()
 
+(𝑓::SuperFeature)(x::AbstractVector) = x |> getsuper(𝑓) |> getmethod(𝑓)
+(𝑓::SuperFeature)(X::AbstractDimArray) = _construct(𝑓, mapslices(getmethod(𝑓)∘getsuper(𝑓), X; dims=1))
 
 struct SuperFeatureSet <: AbstractFeatureSet
     features::Vector{AbstractFeature}
     SuperFeatureSet(features::Vector{T}) where {T <: AbstractFeature} = new(features)
 end
 
-SuperFeatureSet(methods::AbstractVector{<:Function}, args...) = SuperFeature.(methods, args...) |> SuperFeatureSet
+SuperFeatureSet(methods::AbstractVector{<:Function}, names::Vector{Symbol}, descriptions::Vector{String}, keywords, super) = SuperFeature.(methods, names, descriptions, keywords, super) |> SuperFeatureSet
 SuperFeatureSet(methods::Function, args...) = [SuperFeature(methods, args...)] |> SuperFeatureSet
-SuperFeatureSet(; methods, names, keywords, descriptions) = SuperFeatureSet(methods, names, keywords, descriptions)
+SuperFeatureSet(; methods, names, keywords, descriptions, super) = SuperFeatureSet(methods, names, keywords, descriptions, super)
 SuperFeatureSet(f::AbstractFeature) = SuperFeatureSet([f])
 SuperFeatureSet(𝒇::Vector{Feature}) = FeatureSet(𝒇) # Just a regular feature set
 
@@ -40,5 +42,7 @@ function (𝒇::SuperFeatureSet)(x::AbstractVector)
     superloop(f::AbstractFeature) = f(x) # No superval lookup for regular features
     FeatureVector([superloop(𝑓) for 𝑓 ∈ 𝒇], 𝒇)
 end
+
+(𝒇::SuperFeatureSet)(X::AbstractDimArray) = _setconstruct(𝒇, X)
 
 end # module
