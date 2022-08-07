@@ -127,4 +127,21 @@ println("Testing CovarianceImage")
     @test covarianceimage(F; colormode=:raw, verbose, colorbargrad=:viridis) isa Plots.Plot
 end
 
+
+println("Testing SuperFeatures")
+@testset "SuperFeatures" begin
+    𝐱 = rand(1000, 2)
+    zscore = Feature(Catch22.z_score, :z_score, ["normalization"], "Z-score (standardise): 𝐱 → (𝐱 - μ(𝐱))/σ(𝐱)")
+    @test_nowarn zscore(𝐱)
+    μ = SuperFeature(Catch22.mean, :μ, ["0"], "Mean value of the z-scored time series", super=zscore)
+    σ = SuperFeature(Catch22.std, :σ, ["1"], "Standard deviation of the z-scored time series"; super=zscore)
+    𝒇 = SuperFeatureSet([μ, σ])
+    @test all(isapprox.(𝒇(𝐱), [0.0 0.0; 1.0 1.0]; atol=1e-9))
+end
+
+println("Testing Catch22 SuperFeatures")
+@testset "Catch22 SuperFeatures" begin
+    𝐱 = rand(1000, 10)
+end
+
 end

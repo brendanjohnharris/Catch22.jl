@@ -21,6 +21,7 @@ end
 include("Features.jl")
 include("FeatureSets.jl")
 include("FeatureArrays.jl")
+include("SuperFeatures.jl")
 include("metadata.jl")
 include("testdata.jl")
 
