@@ -26,7 +26,7 @@ struct SuperFeatureSet <: AbstractFeatureSet
     SuperFeatureSet(features::Vector{T}) where {T <: AbstractFeature} = new(features)
 end
 
-SuperFeatureSet(methods::AbstractVector{<:Function}, args...) = SuperFeature.(methods, args...) |> FeatureSet
+SuperFeatureSet(methods::AbstractVector{<:Function}, args...) = SuperFeature.(methods, args...) |> SuperFeatureSet
 SuperFeatureSet(methods::Function, args...) = [SuperFeature(methods, args...)] |> SuperFeatureSet
 SuperFeatureSet(; methods, names, keywords, descriptions) = SuperFeatureSet(methods, names, keywords, descriptions)
 SuperFeatureSet(f::AbstractFeature) = SuperFeatureSet([f])
