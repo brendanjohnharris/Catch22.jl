@@ -21,6 +21,7 @@ end
 include("Features.jl")
 include("FeatureSets.jl")
 include("FeatureArrays.jl")
+include("SuperFeatures.jl")
 include("metadata.jl")
 include("testdata.jl")
 
@@ -50,13 +51,20 @@ Catch22._catch22(𝐱, :DN_HistogramMode_5)
 """
 function _catch22(𝐱::AbstractVector, fName::Symbol)
     nancheck(𝐱) && return NaN
-    𝐱 = 𝐱 |> z_score |> Vector{Float64}
+    𝐱 = 𝐱 |> Vector{Float64}
     fType = featuretypes[fName]
     return _ccall(fName, fType)(𝐱)
 end
 function _catch22(X::AbstractArray{Float64, 2}, fName::Symbol)::AbstractArray{Float64, 2}
     mapslices(𝐱 -> _catch22(𝐱, fName), X, dims=[1])
 end
+
+"""
+The set of Catch22 features without a preliminary z-score
+"""
+catch22_raw = FeatureSet([(x -> _catch22(x, f)) for f ∈ featurenames], featurenames, featurekeywords, featuredescriptions)
+
+zᶠ = Feature(Catch22.z_score, :z_score, ["normalization"], "𝐱 → (𝐱 - μ(𝐱))/σ(𝐱)")
 
 """
     catch22(𝐱::Vector)
@@ -77,7 +85,7 @@ F = catch22(X)
 F = catch22[:DN_HistogramMode_5](X)
 ```
 """
-catch22 = FeatureSet([(x -> _catch22(x, f)) for f ∈ featurenames], featurenames, featurekeywords, featuredescriptions)
+catch22 = SuperFeatureSet([(x -> _catch22(x, f)) for f ∈ featurenames], featurenames, featuredescriptions, featurekeywords, zᶠ)
 export catch22
 
 

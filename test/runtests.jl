@@ -5,6 +5,7 @@ using Catch22
 using Catch22.DimensionalData
 import Catch22.testdata, Catch22.testoutput, Catch22.testnames
 using Test
+using StatsBase
 
 function isnearlyequalorallnan(a::AbstractArray, b::AbstractArray)
     replace!(a, NaN=>0.0)
@@ -125,6 +126,62 @@ println("Testing CovarianceImage")
     @test covarianceimage(F; colormode=:top, verbose) isa Plots.Plot
     @test covarianceimage(F; colormode=:all, verbose) isa Plots.Plot
     @test covarianceimage(F; colormode=:raw, verbose, colorbargrad=:viridis) isa Plots.Plot
+end
+
+
+println("Testing SuperFeatures")
+@testset "SuperFeatures" begin
+    𝐱 = rand(1000, 2)
+    @test_nowarn Catch22.zᶠ(𝐱)
+    μ = SuperFeature(Catch22.mean, :μ, ["0"], "Mean value of the z-scored time series", super=Catch22.zᶠ)
+    σ = SuperFeature(Catch22.std, :σ, ["1"], "Standard deviation of the z-scored time series"; super=Catch22.zᶠ)
+    𝒇 = SuperFeatureSet([μ, σ])
+    @test all(isapprox.(𝒇(𝐱), [0.0 0.0; 1.0 1.0]; atol=1e-9))
+end
+
+println("Testing Catch22 SuperFeatures")
+@testset "Catch22 SuperFeatures" begin
+    catch22² = vcat(fill(catch22, 22)...);
+    catch22_raw² = vcat(fill(Catch22.catch22_raw, 22)...);
+    X = rand(1000, 10)
+    @test catch22²(X) !== catch22_raw²(X)
+    @test catch22_raw²(X) !== catch22_raw²(mapslices(Catch22.z_score, X, dims=1))
+    @test catch22²(X) == catch22_raw²(mapslices(Catch22.z_score, X, dims=1))
+
+    # @benchmark catch22_raw²(X)
+    # @benchmark catch22²(X)
+    # @benchmark catch22_raw²(mapslices(Catch22.z_score, X, dims=1))
+    # @benchmark mapslices(Catch22.z_score, X, dims=1)
+end
+
+println("Testing ACF and PACF")
+@testset "ACF and PACF" begin
+    X = randn(1000, 10)
+    _acf = mapslices(x->autocor(x, Catch22.ac_lags; demean=true), X; dims=1)
+    @test all(ac(X) .== _acf)
+    _pacf = mapslices(x->pacf(x, Catch22.ac_lags; method=:regression), X; dims=1)
+    @test all(partial_ac(X) .== _pacf)
+end
+
+println("Testing PACF superfeatures")
+@testset "PACF superfeatures" begin
+    X = randn(1000, 10)
+    lags = Catch22.ac_lags
+    AC_slow = FeatureSet([x->autocor(x, [ℓ]; demean=true)[1]::Float64 for ℓ ∈ lags],
+                    Symbol.(["AC_$ℓ" for ℓ ∈ lags]),
+                    [["correlation"] for ℓ ∈ lags],
+                    ["Autocorrelation at lag $ℓ" for ℓ ∈ lags])
+    AC_partial_slow = FeatureSet([x->pacf(x, [ℓ]; method=:regression)[1]::Float64 for ℓ ∈ lags],
+                    Symbol.(["AC_partial_$ℓ" for ℓ ∈ lags]),
+                    [["correlation"] for ℓ ∈ lags],
+                    ["Partial autocorrelation at lag $ℓ (regression method)" for ℓ ∈ lags])
+
+    @test all(AC_slow(X) .== ac(X))
+    @test all(AC_partial_slow(X) .== partial_ac(X))
+    println("\nFeature autocorrelation: "); @time AC_slow(X);
+    println("\nSuperFeature autocorrelation: "); @time ac(X);
+    println("\nFeature partial autocorrelation: "); @time AC_partial_slow(X);
+    println("\nSuperfeature partial autocorrelation: "); @time partial_ac(X);
 end
 
 end

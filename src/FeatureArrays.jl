@@ -169,8 +169,9 @@ function (𝒇::AbstractFeatureSet)(X::AbstractArray)
     FeatureArray(F, 𝒇)
 end
 
-
-(𝑓::AbstractFeature)(X::AbstractDimArray) = FeatureArray(mapslices(getmethod(𝑓), X; dims=1), (Dim{:feature}([getname(𝑓)]), dims(X)[2:end]...))
-(𝒇::AbstractFeatureSet)(X::AbstractDimArray) = FeatureArray(𝒇(Array(X)), (Dim{:feature}(getnames(𝒇)), dims(X)[2:end]...))
+_construct(𝑓::AbstractFeature, X::AbstractArray) = FeatureArray(X, (Dim{:feature}([getname(𝑓)]), dims(X)[2:end]...))
+(𝑓::AbstractFeature)(X::AbstractDimArray) = _construct(𝑓, mapslices(getmethod(𝑓), X; dims=1))
+_setconstruct(𝒇::AbstractFeatureSet, X::AbstractArray) = FeatureArray(𝒇(Array(X)), (Dim{:feature}(getnames(𝒇)), dims(X)[2:end]...))
+(𝒇::AbstractFeatureSet)(X::AbstractDimArray) = _setconstruct(𝒇, X)
 
 end # module
