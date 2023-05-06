@@ -186,4 +186,31 @@ println("Testing PACF superfeatures")
     println("\nSuperfeature partial autocorrelation: "); @time partial_ac(X);
 end
 
+@testset "Multithreading" begin
+    X = randn(10000)
+    meths = Catch22.featurenames
+    cres = zeros(size(X)[1], length(meths))
+    window=100
+    f(X) = for j in eachindex(meths)
+        Threads.@threads for i in 1:size(X, 1)-window
+            @inbounds cres[i+window, j] = catch22[meths[j]](X[i:i+window])
+        end
+    end
+
+    g(X) = Threads.@threads for i in 1:size(X, 1)-window
+        @inbounds cres[i+window, :] = catch22[meths](X[i:i+window])
+    end
+
+    h(X) = catch22[meths]([X[i:i+window] for i in 1:size(X, 1)-window])
+
+    i(X) = catch22[meths](@views [X[i:i+window] for i in 1:size(X, 1)-window])
+
+    using BenchmarkTools
+    BenchmarkTools.DEFAULT_PARAMETERS.seconds = 5
+    @test_nowarn f(X); @benchmark f(X)
+    @test_nowarn g(X); @benchmark g(X)
+    @test_nowarn h(X); @benchmark h(X)
+    @test_nowarn i(X); @benchmark i(X)
+end
+
 end
