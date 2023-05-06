@@ -32,10 +32,12 @@ SuperFeatureSet(methods::AbstractVector{<:Function}, names::Vector{Symbol}, desc
 SuperFeatureSet(methods::Function, args...) = [SuperFeature(methods, args...)] |> SuperFeatureSet
 SuperFeatureSet(; methods, names, keywords, descriptions, super) = SuperFeatureSet(methods, names, keywords, descriptions, super)
 SuperFeatureSet(f::AbstractFeature) = SuperFeatureSet([f])
+
 # SuperFeatureSet(𝒇::Vector{Feature}) = SuperFeatureSet(getmethods(𝒇), getnames(𝒇), getdescriptions(𝒇), getkeywords(𝒇), getsuper(first(𝒇)))
 getindex(𝒇::AbstractFeatureSet, I) = SuperFeatureSet(getfeatures(𝒇)[I])
+SuperFeatureSet(𝒇::Vector{Feature}) = FeatureSet(𝒇) # Just a regular feature set
 
-function (𝒇::SuperFeatureSet)(x::AbstractVector)
+function (𝒇::SuperFeatureSet)(x::AbstractVector{<:Number})
     ℱ = getsuper.(𝒇) |> unique |> SuperFeatureSet
     supervals = ℱ(x)
     superloop(f::SuperFeature) = getmethod(f)(supervals[getsuper(f)])

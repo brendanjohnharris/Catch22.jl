@@ -27,3 +27,4 @@ Artifacts.toml
 # VS Code settings
 .vscode/*
 *.code-workspace
+profile.pb.gz

@@ -156,6 +156,19 @@ end
 
 (𝒇::AbstractFeatureSet)(x::AbstractVector) = FeatureVector([𝑓(x) for 𝑓 ∈ 𝒇], 𝒇)
 
+function (𝒇::AbstractFeatureSet)(X::AbstractVector{<:AbstractVector})
+    F = Array{Float64}(undef, (length(𝒇), length(X)))
+    threadlog = 0
+    threadmax = prod(size(F, 2))/Threads.nthreads()
+    @withprogress name="catch22" begin
+        Threads.@threads for i ∈ eachindex(X)
+            F[:, Tuple(i)...] .= 𝒇(X[i])
+            Threads.threadid() == 1 && (threadlog += 1)%50 == 0 && @logprogress threadlog/threadmax
+        end
+    end
+    FeatureArray(F, 𝒇)
+end
+
 function (𝒇::AbstractFeatureSet)(X::AbstractArray)
     F = Array{Float64}(undef, (length(𝒇), size(X)[2:end]...))
     threadlog = 0
