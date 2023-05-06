@@ -2,7 +2,7 @@
 
 import ..getmethod
 import ..Features: AbstractFeature, Feature
-import ..FeatureSets: AbstractFeatureSet, FeatureSet
+import ..FeatureSets: AbstractFeatureSet, FeatureSet, getmethods, getnames, getdescriptions, getkeywords
 import ..FeatureArrays: FeatureVector, AbstractDimArray, _construct, _setconstruct
 
 export  SuperFeature,
@@ -32,8 +32,8 @@ SuperFeatureSet(methods::AbstractVector{<:Function}, names::Vector{Symbol}, desc
 SuperFeatureSet(methods::Function, args...) = [SuperFeature(methods, args...)] |> SuperFeatureSet
 SuperFeatureSet(; methods, names, keywords, descriptions, super) = SuperFeatureSet(methods, names, keywords, descriptions, super)
 SuperFeatureSet(f::AbstractFeature) = SuperFeatureSet([f])
-SuperFeatureSet(𝒇::Vector{Feature}) = FeatureSet(𝒇) # Just a regular feature set
-
+# SuperFeatureSet(𝒇::Vector{Feature}) = SuperFeatureSet(getmethods(𝒇), getnames(𝒇), getdescriptions(𝒇), getkeywords(𝒇), getsuper(first(𝒇)))
+getindex(𝒇::AbstractFeatureSet, I) = SuperFeatureSet(getfeatures(𝒇)[I])
 
 function (𝒇::SuperFeatureSet)(x::AbstractVector)
     ℱ = getsuper.(𝒇) |> unique |> SuperFeatureSet

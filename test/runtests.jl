@@ -147,6 +147,8 @@ println("Testing Catch22 SuperFeatures")
     @test catch22²(X) !== catch22_raw²(X)
     @test catch22_raw²(X) !== catch22_raw²(mapslices(Catch22.z_score, X, dims=1))
     @test catch22²(X) == catch22_raw²(mapslices(Catch22.z_score, X, dims=1))
+    @test catch22²[1:10] isa SuperFeatureSet
+    @test catch22_raw²[1:10](X) == catch22_raw²(X)[1:10]
 
     # @benchmark catch22_raw²(X)
     # @benchmark catch22²(X)
