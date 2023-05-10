@@ -53,3 +53,6 @@ Finally, note that since `catch22` is a `FeatureSet` it can be indexed with a ve
 
 # Single-threaded performance
 ![scaling](scaling.png)
+# Multithreaded performance
+Calculating features for 100 time series of a given length.
+![multithread_scaling](mutlithread_scaling.png)

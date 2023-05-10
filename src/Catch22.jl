@@ -8,6 +8,22 @@ using LinearAlgebra
 import Statistics: mean, std, cov
 
 function __init__()
+    catch22_jll.__init__() # Initialise the C library
+    lib = dlopen(ccatch22)
+    # macro dlsym(lib, func)
+    #     z = Ref{Ptr{Cvoid}}(C_NULL)
+    #     quote
+    #         let zlocal = $z[]
+    #             if zlocal == C_NULL
+    #                 zlocal = dlsym($(esc(lib))::Ptr{Cvoid}, $(esc(func)))::Ptr{Cvoid}
+    #                 $z[] = zlocal
+    #             end
+    #             zlocal
+    #         end
+    #     end
+    # end
+    global fbindings = Dict{Symbol, Ptr{Cvoid}}(f => dlsym(lib, f) for f ∈ catch24_featurenames)
+
     @require Plots="91a5bcdd-55d7-5caf-9e0b-520d859cae80" begin
         @require Clustering="aaaa29a8-35af-508c-8bc3-b662a17a0fe5" begin
             @eval include("CovarianceImage.jl")
@@ -25,16 +41,14 @@ include("SuperFeatures.jl")
 include("metadata.jl")
 include("testdata.jl")
 
-catch22_jll.__init__() # Initialise the C library
-
 z_score(𝐱::AbstractVector) = (𝐱 .- mean(𝐱))./(std(𝐱))
 nancheck(𝐱::AbstractVector) = any(isinf.(𝐱)) || any(isnan.(𝐱)) || length(𝐱) < 3
 
 function _ccall(fName::Symbol, ::Type{T}) where T<:Integer
-    f(𝐱)::T = ccall(dlsym(dlopen(ccatch22), fName), Cint, (Ptr{Array{Cint}},Cint), 𝐱, Int(size(𝐱, 1)))
+    f(𝐱)::T = ccall(fbindings[fName], Cint, (Ptr{Array{Cint}},Cint), 𝐱, Int(size(𝐱, 1)))
 end
 function _ccall(fName::Symbol, ::Type{T}) where T<:AbstractFloat
-    f(𝐱)::T = ccall(dlsym(dlopen(ccatch22), fName), Cdouble, (Ptr{Array{Cdouble}},Cint), 𝐱, Int(size(𝐱, 1)))
+    f(𝐱)::T = ccall(fbindings[fName], Cdouble, (Ptr{Array{Cdouble}},Cint), 𝐱, Int(size(𝐱, 1)))
 end
 
 

@@ -211,6 +211,12 @@ end
     @test_nowarn g(X); # @benchmark g(X)
     @test_nowarn h(X); # @benchmark h(X)
     @test_nowarn i(X); # @benchmark i(X)
+    # using PProf
+    # using Profile
+    # Profile.clear()
+    # @profile i(X)
+    # pprof()
+    # @profview i(X)
 end
 
 end
