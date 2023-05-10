@@ -6,6 +6,7 @@ using Catch22.DimensionalData
 import Catch22.testdata, Catch22.testoutput, Catch22.testnames
 using Test
 using StatsBase
+# using BenchmarkTools
 
 function isnearlyequalorallnan(a::AbstractArray, b::AbstractArray)
     replace!(a, NaN=>0.0)
@@ -147,6 +148,8 @@ println("Testing Catch22 SuperFeatures")
     @test catch22²(X) !== catch22_raw²(X)
     @test catch22_raw²(X) !== catch22_raw²(mapslices(Catch22.z_score, X, dims=1))
     @test catch22²(X) == catch22_raw²(mapslices(Catch22.z_score, X, dims=1))
+    # @test catch22²[1:10] isa SuperFeatureSet # Ideally
+    @test catch22_raw²[1:10](X) == catch22_raw²(X)[1:10, :]
 
     # @benchmark catch22_raw²(X)
     # @benchmark catch22²(X)
@@ -182,6 +185,38 @@ println("Testing PACF superfeatures")
     println("\nSuperFeature autocorrelation: "); @time ac(X);
     println("\nFeature partial autocorrelation: "); @time AC_partial_slow(X);
     println("\nSuperfeature partial autocorrelation: "); @time partial_ac(X);
+end
+
+@testset "Multithreading" begin
+    X = randn(10000)
+    meths = Catch22.featurenames
+    cres = zeros(size(X)[1], length(meths))
+    window=100
+    f(X) = for j in eachindex(meths)
+        Threads.@threads for i in 1:size(X, 1)-window
+            @inbounds cres[i+window, j] = catch22[meths[j]](X[i:i+window])
+        end
+    end
+
+    g(X) = Threads.@threads for i in 1:size(X, 1)-window
+        @inbounds cres[i+window, :] = catch22[meths](X[i:i+window])
+    end
+
+    h(X) = catch22[meths]([X[i:i+window] for i in 1:size(X, 1)-window])
+
+    i(X) = catch22[meths](@views [X[i:i+window] for i in 1:size(X, 1)-window])
+
+    # BenchmarkTools.DEFAULT_PARAMETERS.seconds = 5
+    @test_nowarn f(X); # @benchmark f(X)
+    @test_nowarn g(X); # @benchmark g(X)
+    @test_nowarn h(X); # @benchmark h(X)
+    @test_nowarn i(X); # @benchmark i(X)
+    # using PProf
+    # using Profile
+    # Profile.clear()
+    # @profile i(X)
+    # pprof()
+    # @profview i(X)
 end
 
 end

@@ -22,6 +22,7 @@ const featurenames = [
     :SB_TransitionMatrix_3ac_sumdiagcov
     :PD_PeriodicityWang_th0_01]
 
+const catch24_featurenames = [featurenames..., :DN_Mean, :DN_Spread_Std]
 
 const featuretypes = Dict(featurenames .=> [
                                     #DN_HistogramMode_5
