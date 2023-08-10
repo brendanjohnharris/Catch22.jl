@@ -8,20 +8,8 @@ using LinearAlgebra
 import Statistics: mean, std, cov
 
 function __init__()
-    catch22_jll.__init__() # Initialise the C library
+    catch22_jll.__init__()
     lib = dlopen(ccatch22)
-    # macro dlsym(lib, func)
-    #     z = Ref{Ptr{Cvoid}}(C_NULL)
-    #     quote
-    #         let zlocal = $z[]
-    #             if zlocal == C_NULL
-    #                 zlocal = dlsym($(esc(lib))::Ptr{Cvoid}, $(esc(func)))::Ptr{Cvoid}
-    #                 $z[] = zlocal
-    #             end
-    #             zlocal
-    #         end
-    #     end
-    # end
     global fbindings = Dict{Symbol, Ptr{Cvoid}}(f => dlsym(lib, f) for f ∈ catch24_featurenames)
 
     @require Plots="91a5bcdd-55d7-5caf-9e0b-520d859cae80" begin

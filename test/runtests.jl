@@ -219,4 +219,12 @@ end
     # @profview i(X)
 end
 
+@testset "RAD" begin
+   x = Catch22.testdata[:testSinusoid]
+   r = autocor(x, 1:length(x)-1)
+   τ = Catch22.firstcrossing(x)
+   @test 159 < τ < 160
+   @test_nowarn CR_RAD(x)
+end
+
 end
