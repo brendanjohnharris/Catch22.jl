@@ -5,8 +5,8 @@ import ..Features: AbstractFeature, Feature
 import ..FeatureSets: AbstractFeatureSet, FeatureSet, getmethods, getnames, getdescriptions, getkeywords
 import ..FeatureArrays: FeatureVector, AbstractDimArray, _construct, _setconstruct
 
-export  SuperFeature,
-        SuperFeatureSet
+export SuperFeature,
+    SuperFeatureSet
 
 Base.@kwdef struct SuperFeature <: AbstractFeature
     method::Function
@@ -21,11 +21,11 @@ getsuper(𝒇::SuperFeature) = 𝒇.super
 getsuper(::AbstractFeature) = ()
 
 (𝑓::SuperFeature)(x::AbstractVector) = x |> getsuper(𝑓) |> getmethod(𝑓)
-(𝑓::SuperFeature)(X::AbstractDimArray) = _construct(𝑓, mapslices(getmethod(𝑓)∘getsuper(𝑓), X; dims=1))
+(𝑓::SuperFeature)(X::AbstractDimArray) = _construct(𝑓, mapslices(getmethod(𝑓) ∘ getsuper(𝑓), X; dims=1))
 
 struct SuperFeatureSet <: AbstractFeatureSet
     features::Vector{AbstractFeature}
-    SuperFeatureSet(features::Vector{T}) where {T <: AbstractFeature} = new(features)
+    SuperFeatureSet(features::Vector{T}) where {T<:AbstractFeature} = new(features)
 end
 
 SuperFeatureSet(methods::AbstractVector{<:Function}, names::Vector{Symbol}, descriptions::Vector{String}, keywords, super) = SuperFeature.(methods, names, descriptions, keywords, super) |> SuperFeatureSet

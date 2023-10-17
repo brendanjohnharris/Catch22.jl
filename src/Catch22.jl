@@ -10,14 +10,14 @@ import Statistics: mean, std, cov
 function __init__()
     catch22_jll.__init__()
     lib = dlopen(ccatch22)
-    global fbindings = Dict{Symbol, Ptr{Cvoid}}(f => dlsym(lib, f) for f ∈ catch24_featurenames)
+    global fbindings = Dict{Symbol,Ptr{Cvoid}}(f => dlsym(lib, f) for f ∈ catch24_featurenames)
 
-    @require Plots="91a5bcdd-55d7-5caf-9e0b-520d859cae80" begin
-        @require Clustering="aaaa29a8-35af-508c-8bc3-b662a17a0fe5" begin
+    @require Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80" begin
+        @require Clustering = "aaaa29a8-35af-508c-8bc3-b662a17a0fe5" begin
             @eval include("CovarianceImage.jl")
         end
     end
-    @require StatsBase="2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91" begin
+    @require StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91" begin
         @eval include("Autocorrelations.jl")
     end
 end
@@ -29,14 +29,14 @@ include("SuperFeatures.jl")
 include("metadata.jl")
 include("testdata.jl")
 
-z_score(𝐱::AbstractVector) = (𝐱 .- mean(𝐱))./(std(𝐱))
+z_score(𝐱::AbstractVector) = (𝐱 .- mean(𝐱)) ./ (std(𝐱))
 nancheck(𝐱::AbstractVector) = any(isinf.(𝐱)) || any(isnan.(𝐱)) || length(𝐱) < 3
 
-function _ccall(fName::Symbol, ::Type{T}) where T<:Integer
-    f(𝐱)::T = ccall(fbindings[fName], Cint, (Ptr{Array{Cint}},Cint), 𝐱, Int(size(𝐱, 1)))
+function _ccall(fName::Symbol, ::Type{T}) where {T<:Integer}
+    f(𝐱)::T = ccall(fbindings[fName], Cint, (Ptr{Array{Cint}}, Cint), 𝐱, Int(size(𝐱, 1)))
 end
-function _ccall(fName::Symbol, ::Type{T}) where T<:AbstractFloat
-    f(𝐱)::T = ccall(fbindings[fName], Cdouble, (Ptr{Array{Cdouble}},Cint), 𝐱, Int(size(𝐱, 1)))
+function _ccall(fName::Symbol, ::Type{T}) where {T<:AbstractFloat}
+    f(𝐱)::T = ccall(fbindings[fName], Cdouble, (Ptr{Array{Cdouble}}, Cint), 𝐱, Int(size(𝐱, 1)))
 end
 
 
@@ -57,7 +57,7 @@ function _catch22(𝐱::AbstractVector, fName::Symbol)
     fType = featuretypes[fName]
     return _ccall(fName, fType)(𝐱)
 end
-function _catch22(X::AbstractArray{Float64, 2}, fName::Symbol)::AbstractArray{Float64, 2}
+function _catch22(X::AbstractArray{Float64,2}, fName::Symbol)::AbstractArray{Float64,2}
     mapslices(𝐱 -> _catch22(𝐱, fName), X, dims=[1])
 end
 
@@ -93,7 +93,8 @@ export catch22
 
 for f ∈ featurenames
     eval(quote
-        $f = catch22[$(Meta.quot(f))]; export $f
+        $f = catch22[$(Meta.quot(f))]
+        export $f
     end)
 end
 
@@ -108,7 +109,7 @@ All features, such as `DN_HistogramMode_5`, are exported as Features and can be 
 f = DN_HistogramMode_5(𝐱)
 ```
 """
-DN_HistogramMode_5;
+DN_HistogramMode_5
 
 # Special cases for DN_Mean and DN_Spread_Std, and shouldn't z_score the vector
 _DN_Mean(𝐱::AbstractVector)::Float64 = nancheck(𝐱) ? NaN : (𝐱 |> _ccall(:DN_Mean, Cdouble))

@@ -25,12 +25,12 @@ const testnames = [
     :testSinusoid
 ]
 
-loaddata(x) = reduce(vcat, readdlm(normpath(joinpath(test_datadir, String(x)*".txt")), ' ', Float64, '\n'))
+loaddata(x) = reduce(vcat, readdlm(normpath(joinpath(test_datadir, String(x) * ".txt")), ' ', Float64, '\n'))
 function loadoutput(x)
-    file = normpath(joinpath(test_datadir, String(x)*"_output.txt"))
+    file = normpath(joinpath(test_datadir, String(x) * "_output.txt"))
     if isfile(file)
         out = readdlm(file, ',', comments=true)
-        return Dict([Symbol(x[2][2:end])=>x[1] for x in eachrow(out)])
+        return Dict([Symbol(x[2][2:end]) => x[1] for x in eachrow(out)])
     else
         return nothing
     end

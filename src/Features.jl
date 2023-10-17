@@ -1,12 +1,12 @@
 @reexport module Features
 using DimensionalData
 import Base: ==, show, hash
-export  AbstractFeature,
-        Feature,
-        getmethod,
-        getname,
-        getkeywords,
-        getdescription
+export AbstractFeature,
+    Feature,
+    getmethod,
+    getname,
+    getkeywords,
+    getdescription
 
 abstract type AbstractFeature <: Function end
 
@@ -41,22 +41,22 @@ getnames(𝑓::AbstractFeature) = [𝑓.name]
 getkeywords(𝑓::AbstractFeature) = 𝑓.keywords
 getdescription(𝑓::AbstractFeature) = 𝑓.description
 
-(𝑓::AbstractFeature)(x::AbstractVector)  = getmethod(𝑓)(x)
+(𝑓::AbstractFeature)(x::AbstractVector) = getmethod(𝑓)(x)
 (𝑓::AbstractFeature)(X::AbstractArray) = mapslices(getmethod(𝑓), X; dims=1)
 
 # We assume that any features with the same name are the same feature
 hash(𝑓::AbstractFeature, h::UInt) = hash(𝑓.name, h)
 (==)(𝑓::AbstractFeature, 𝑓′::AbstractFeature) = hash(𝑓) == hash(𝑓′)
 
-commasep(x) = (y=fill(", ", 2*length(x)-1); y[1:2:end] .= x; y)
+commasep(x) = (y = fill(", ", 2 * length(x) - 1); y[1:2:end] .= x; y)
 formatshort(𝑓::AbstractFeature) = [string(getname(𝑓)), " $(getdescription(𝑓))"]
-formatlong(𝑓::AbstractFeature)=  [ string(typeof(𝑓))*" ",
-                                   string(getname(𝑓)),
-                                   " with fields:\n",
-                                   "description: ",
-                                   getdescription(𝑓),
-                                   "\n$(repeat(' ', 3))keywords: ",
-                                   "$(commasep(getkeywords(𝑓))...)"]
+formatlong(𝑓::AbstractFeature) = [string(typeof(𝑓)) * " ",
+    string(getname(𝑓)),
+    " with fields:\n",
+    "description: ",
+    getdescription(𝑓),
+    "\n$(repeat(' ', 3))keywords: ",
+    "$(commasep(getkeywords(𝑓))...)"]
 show(𝑓::AbstractFeature) = print(formatlong(𝑓)...)
 show(io::IO, 𝑓::AbstractFeature) = print(io, formatlong(𝑓)...)
 function show(io::IO, m::MIME"text/plain", 𝑓::AbstractFeature)

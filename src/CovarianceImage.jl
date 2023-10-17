@@ -5,7 +5,7 @@ using .LinearAlgebra
 
 function clustercovariance(Σ²)
     issymmetric(Σ²) || (Σ² = cov(Σ²'))
-    Dr = 1.0.-abs.(Σ²)
+    Dr = 1.0 .- abs.(Σ²)
     if !issymmetric(Dr)
         @warn "Correlation distance matrix is not symmetric, so not clustering"
     end
@@ -42,7 +42,7 @@ Plots.@recipe function f(g::CovarianceImage; palette=[:cornflowerblue, :crimson,
     linecolor --> nothing
     if docluster == true
         idxs = clustercovariance(Σ²).order
-    elseif docluster isa Union{AbstractVector, Tuple}
+    elseif docluster isa Union{AbstractVector,Tuple}
         idxs = docluster # Precomputed indices
     elseif docluster isa Clustering.Hclust
         idxs = docluster.order
@@ -50,19 +50,19 @@ Plots.@recipe function f(g::CovarianceImage; palette=[:cornflowerblue, :crimson,
         idxs = 1:size(Σ², 1)
     end
     Σ̂² = Σ²[idxs, idxs]
-    A = abs.(Σ̂²)./max(abs.(Σ̂²)...)
+    A = abs.(Σ̂²) ./ max(abs.(Σ̂²)...)
     f̂ = f[idxs]
     N = min(length(palette), size(Σ̂², 1))
     if colormode == :raw # * Don't color by PC's
         H = abs.(Σ̂²)
         colorbar --> true
     else
-        λ = (eigvals∘Symmetric∘Array)(Σ̂²)
+        λ = (eigvals ∘ Symmetric ∘ Array)(Σ̂²)
         λi = sortperm(abs.(λ), rev=true)
         λ = λ[λi]
-        P = (eigvecs∘Symmetric∘Array)(Σ̂²)[:, λi] # Now sorted by decreasing eigenvalue norm
+        P = (eigvecs ∘ Symmetric ∘ Array)(Σ̂²)[:, λi] # Now sorted by decreasing eigenvalue norm
         vidxs = sortperm(abs.(P[:, 1]), rev=true)
-        verbose && isnothing(printstyled("Feature weights:\n", color=:red, bold=true)) && display(vcat(hcat("Feature", ["PC$i" for i ∈ 1:N]...) , hcat(f̂[vidxs], round.(P[vidxs, 1:N], sigdigits=3))))
+        verbose && isnothing(printstyled("Feature weights:\n", color=:red, bold=true)) && display(vcat(hcat("Feature", ["PC$i" for i ∈ 1:N]...), hcat(f̂[vidxs], round.(P[vidxs, 1:N], sigdigits=3))))
         P = abs.(P)
         # if colormode isa Matrix # Supply custom coloring matrix. Should be an nfeature×ncolor matrix
         #     P = colormode
@@ -71,31 +71,31 @@ Plots.@recipe function f(g::CovarianceImage; palette=[:cornflowerblue, :crimson,
         #     𝑓′ = parse.(Colors.XYZ, palette[1:N]);
         if colormode == :top # * Color by the number of PC's given by the length of the color palette
             P = P[:, 1:N]
-            P̂ = P.^2.0./sum(P.^2.0, dims=2)
+            P̂ = P .^ 2.0 ./ sum(P .^ 2.0, dims=2)
             # Square the loadings, since they are added in quadrature. Maybe not a completely faithful representation of the PC proportions, but should get the job done.
-            𝑓′ = parse.(Colors.XYZ, palette[1:N]);
+            𝑓′ = parse.(Colors.XYZ, palette[1:N])
         elseif colormode == :all # * Color by all PC's. This can end up very brown
             Σ̂′² = Diagonal(abs.(λ))
-            P̂ = P.^2.0./sum(P.^2.0, dims=2)
+            P̂ = P .^ 2.0 ./ sum(P .^ 2.0, dims=2)
             p = fill(:black, size(P, 2))
             p[1:N] = palette[1:N]
-            𝑓′ = parse.(Colors.XYZ, p);
-            [𝑓′[i] = Σ̂′²[i, i]*𝑓′[i] for i ∈ 1:length(𝑓′)]
+            𝑓′ = parse.(Colors.XYZ, p)
+            [𝑓′[i] = Σ̂′²[i, i] * 𝑓′[i] for i ∈ 1:length(𝑓′)]
         end
         𝑓 = Vector{eltype(𝑓′)}(undef, size(P̂, 1))
         try # Load colors by PC weights
-            𝑓 = P̂*𝑓′
+            𝑓 = P̂ * 𝑓′
         catch
             # Equivalent but slower
             @info "Iterating to load covariances"
             for ii ∈ 1:length(𝑓)
-                𝑓[ii] = sum([P̂[ii, jj]*𝑓′[jj] for jj ∈ 1:length(𝑓′)])
+                𝑓[ii] = sum([P̂[ii, jj] * 𝑓′[jj] for jj ∈ 1:length(𝑓′)])
             end
         end
 
         H = Array{Colors.XYZA}(undef, size(Σ̂²))
         for (i, j) ∈ Tuple.(CartesianIndices(H)) # Apply the correlations as transparencies
-            J = (𝑓[i] + 𝑓[j])/2
+            J = (𝑓[i] + 𝑓[j]) / 2
             H[i, j] = Colors.XYZA(J.x, J.y, J.z, A[i, j])
         end
         H = convert.((Colors.RGBA,), H)
@@ -143,7 +143,7 @@ Plots.@recipe function f(g::CovarianceImage; palette=[:cornflowerblue, :crimson,
             xticks := :none
             size --> (800, 400)
             yflip --> true
-            lims := (0.5, size(H, 1)+0.5)
+            lims := (0.5, size(H, 1) + 0.5)
             aspect_ratio := :equal
             legendfontsize --> 8
             if donames

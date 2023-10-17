@@ -3,8 +3,8 @@ import ..Features: AbstractFeature, Feature, getname, getkeywords, getdescriptio
 using DimensionalData
 import Base: show, size, getindex, setindex!, similar, eltype, deleteat!, filter, union, intersect, convert, promote_rule, +, \
 
-export  AbstractFeatureSet, FeatureSet,
-        getfeatures, getmethods, getnames, getkeywords, getdescriptions
+export AbstractFeatureSet, FeatureSet,
+    getfeatures, getmethods, getnames, getkeywords, getdescriptions
 
 
 abstract type AbstractFeatureSet <: AbstractVector{Function} end
@@ -38,7 +38,7 @@ G = 𝒈₂(X) # The intersection contains the :sum of the first argument to ∩
 """
 struct FeatureSet <: AbstractFeatureSet
     features::Vector{AbstractFeature}
-    FeatureSet(features::Vector{T}) where {T <: AbstractFeature} = new(features)
+    FeatureSet(features::Vector{T}) where {T<:AbstractFeature} = new(features)
 end
 
 FeatureSet(methods::AbstractVector{<:Function}, args...) = Feature.(methods, args...) |> FeatureSet
@@ -47,10 +47,10 @@ FeatureSet(; methods, names, keywords, descriptions) = FeatureSet(methods, names
 FeatureSet(f::AbstractFeature) = FeatureSet([f])
 
 getfeatures(𝒇::AbstractFeatureSet) = 𝒇.features
-getmethods(𝒇::AbstractFeatureSet)  = getmethod.(𝒇)
-getnames(𝒇::AbstractFeatureSet)  = getname.(𝒇)
-getkeywords(𝒇::AbstractFeatureSet)  = getkeywords.(𝒇)
-getdescriptions(𝒇::AbstractFeatureSet)  = getdescription.(𝒇)
+getmethods(𝒇::AbstractFeatureSet) = getmethod.(𝒇)
+getnames(𝒇::AbstractFeatureSet) = getname.(𝒇)
+getkeywords(𝒇::AbstractFeatureSet) = getkeywords.(𝒇)
+getdescriptions(𝒇::AbstractFeatureSet) = getdescription.(𝒇)
 
 size(𝒇::AbstractFeatureSet) = size(getfeatures(𝒇))
 
@@ -82,10 +82,10 @@ deleteat!(𝒇::AbstractFeatureSet, args...) = deleteat!(𝒇.features, args...)
 filter(f, 𝒇::AbstractFeatureSet) = FeatureSet(filter(f, getfeatures(𝒇)))
 
 (+)(𝒇::AbstractFeatureSet, 𝒇′::AbstractFeatureSet) = FeatureSet(
-                    [vcat(g(𝒇), g(𝒇′)) for g ∈ [getfeatures,
-                                                getnames,
-                                                getkeywords,
-                                                getdescriptions]]...)
+    [vcat(g(𝒇), g(𝒇′)) for g ∈ [getfeatures,
+        getnames,
+        getkeywords,
+        getdescriptions]]...)
 (\)(𝒇::AbstractFeatureSet, 𝒇′::AbstractFeatureSet) = setdiff(𝒇, 𝒇′)
 
 # Allow operations between FeatureSet and Feature by converting the Feature

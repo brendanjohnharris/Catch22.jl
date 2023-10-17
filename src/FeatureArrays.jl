@@ -7,16 +7,16 @@ import DimensionalData: dims, refdims, data, name, metadata, rebuild, parent, Ab
 import DimensionalData.Dimensions: AnonDim, format, LookupArrays.NoMetadata
 import Base: Array, getindex, setindex!
 
-export  AbstractFeatureArray, AbstractFeatureVector, AbstractFeatureMatrix,
-        FeatureArray, FeatureVector, FeatureMatrix,
-        getdim, setdim
+export AbstractFeatureArray, AbstractFeatureVector, AbstractFeatureMatrix,
+    FeatureArray, FeatureVector, FeatureMatrix,
+    getdim, setdim
 
 
 
 abstract type AbstractFeatureArray{T,N,D,A} <: AbstractDimArray{T,N,D,A} end
 
-AbstractFeatureVector = AbstractFeatureArray{T, 1} where {T}
-AbstractFeatureMatrix = AbstractFeatureArray{T, 2} where {T}
+AbstractFeatureVector = AbstractFeatureArray{T,1} where {T}
+AbstractFeatureMatrix = AbstractFeatureArray{T,2} where {T}
 
 
 """
@@ -41,24 +41,24 @@ struct FeatureArray{T,N,D<:Tuple,R<:Tuple,A<:AbstractArray{T,N},Na,Me} <: Abstra
 end
 
 function FeatureArray(data::A, dims::D, refdims::R=(), name::Na=NoName()) where {D,R,A,Na}
-    if typeof(dims[1]) <: Dim{:feature, Vector{Symbol}}
+    if typeof(dims[1]) <: Dim{:feature,Vector{Symbol}}
         FeatureArray(data, format(dims, data), refdims, name, NoMetadata())
     else
         @error "Incorrect dimensions for FeatureArray"
     end
 end
 
-function FeatureArray(data::AbstractArray, features::Union{Tuple{Symbol}, Vector{Symbol}}, args...)
-    FeatureArray(data, (Dim{:feature}(features), fill(AnonDim(), ndims(data)-1)...), args...)
+function FeatureArray(data::AbstractArray, features::Union{Tuple{Symbol},Vector{Symbol}}, args...)
+    FeatureArray(data, (Dim{:feature}(features), fill(AnonDim(), ndims(data) - 1)...), args...)
 end
-function FeatureArray(data::AbstractArray, features::Union{Tuple{Symbol}, Vector{Symbol}}, timeseries::Union{Vector, Tuple}, args...)
+function FeatureArray(data::AbstractArray, features::Union{Tuple{Symbol},Vector{Symbol}}, timeseries::Union{Vector,Tuple}, args...)
     if data isa AbstractVector
         FeatureArray(reshape(data, :, 1), (Dim{:feature}(features), Dim{:timeseries}(timeseries)), args...)
     else
         FeatureArray(data, (Dim{:feature}(features), Dim{:timeseries}(timeseries)), args...)
     end
 end
-function FeatureArray(data::AbstractArray, features::Union{Tuple{Symbol}, Vector{Symbol}}, otherdims::Union{Pair, Tuple{Pair}, Vector{Pair}}, args...)
+function FeatureArray(data::AbstractArray, features::Union{Tuple{Symbol},Vector{Symbol}}, otherdims::Union{Pair,Tuple{Pair},Vector{Pair}}, args...)
     if otherdims isa Pair
         otherdims = [otherdims]
     end
@@ -83,16 +83,16 @@ end
 # * Index with Features and feature names
 fidx(𝑓::AbstractFeature) = getname(𝑓)
 fidx(𝑓::AbstractFeatureSet) = getnames(𝑓)
-fidx(𝑓::Union{Symbol, Vector{Symbol}}) = At(𝑓)
-FeatureUnion = Union{Symbol, Vector{Symbol}, AbstractFeature, AbstractFeatureSet}
+fidx(𝑓::Union{Symbol,Vector{Symbol}}) = At(𝑓)
+FeatureUnion = Union{Symbol,Vector{Symbol},AbstractFeature,AbstractFeatureSet}
 getindex(A::AbstractFeatureVector, 𝑓::FeatureUnion) = getindex(A, fidx(𝑓))
 setindex!(A::AbstractFeatureVector, x, 𝑓::FeatureUnion) = setindex!(A, x, fidx(𝑓))
 getindex(A::AbstractFeatureArray, 𝑓::FeatureUnion, i, I...) = getindex(A, fidx(𝑓), i, I...)
 setindex!(A::AbstractFeatureArray, x, 𝑓::FeatureUnion, i, I...) = setindex!(A, x, fidx(𝑓), i, I...)
 
 # * And with features alone, no other dims. Here we assume features are along the first dim.
-getindex(A::AbstractFeatureArray, 𝑓::FeatureUnion) = getindex(A, 𝑓, fill(:, ndims(A)-1)...)
-setindex!(A::AbstractFeatureArray, x, 𝑓::FeatureUnion) = setindex!(A, x, 𝑓, fill(:, ndims(A)-1)...)
+getindex(A::AbstractFeatureArray, 𝑓::FeatureUnion) = getindex(A, 𝑓, fill(:, ndims(A) - 1)...)
+setindex!(A::AbstractFeatureArray, x, 𝑓::FeatureUnion) = setindex!(A, x, 𝑓, fill(:, ndims(A) - 1)...)
 
 
 """
@@ -106,7 +106,7 @@ data = rand(Int, 2, 3) # Some feature matrix with 2 features and 3 timeseries
 F = FeatureMatrix(data, [:sum, :length], [1, 2, 3])
 ```
 """
-FeatureMatrix = FeatureArray{T, 2} where {T}
+FeatureMatrix = FeatureArray{T,2} where {T}
 
 """
     FeatureArray{T, 1} where {T}
@@ -119,7 +119,7 @@ data = randn(2) # Feature values for 1 time series
 𝐟 = FeatureVector(data, [:sum, :length])
 ```
 """
-FeatureVector = FeatureArray{T, 1} where {T}
+FeatureVector = FeatureArray{T,1} where {T}
 
 FeatureArray(X::AbstractArray, 𝒇::AbstractFeatureSet) = FeatureArray(X::AbstractArray, getnames(𝒇))
 
@@ -159,11 +159,11 @@ end
 function (𝒇::AbstractFeatureSet)(X::AbstractVector{<:AbstractVector})
     F = Array{Float64}(undef, (length(𝒇), length(X)))
     threadlog = 0
-    threadmax = prod(size(F, 2))/Threads.nthreads()
-    @withprogress name="catch22" begin
+    threadmax = prod(size(F, 2)) / Threads.nthreads()
+    @withprogress name = "catch22" begin
         Threads.@threads for i ∈ eachindex(X)
             F[:, Tuple(i)...] .= 𝒇(X[i])
-            Threads.threadid() == 1 && (threadlog += 1)%50 == 0 && @logprogress threadlog/threadmax
+            Threads.threadid() == 1 && (threadlog += 1) % 50 == 0 && @logprogress threadlog / threadmax
         end
     end
     FeatureArray(F, 𝒇)
@@ -172,11 +172,11 @@ end
 function (𝒇::AbstractFeatureSet)(X::AbstractArray)
     F = Array{Float64}(undef, (length(𝒇), size(X)[2:end]...))
     threadlog = 0
-    threadmax = prod(size(F)[2:end])/Threads.nthreads()
-    @withprogress name="catch22" begin
+    threadmax = prod(size(F)[2:end]) / Threads.nthreads()
+    @withprogress name = "catch22" begin
         Threads.@threads for i ∈ CartesianIndices(size(F)[2:end])
             F[:, Tuple(i)...] = vec(𝒇(X[:, Tuple(i)...]))
-            Threads.threadid() == 1 && (threadlog += 1)%50 == 0 && @logprogress threadlog/threadmax
+            Threads.threadid() == 1 && (threadlog += 1) % 50 == 0 && @logprogress threadlog / threadmax
         end
     end
     FeatureArray(F, 𝒇)
