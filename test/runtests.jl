@@ -50,6 +50,12 @@ using SafeTestsets
         @test @time catch24(X) isa FeatureMatrix
     end
 
+    # Test short name version is the same as the full version
+    println("Testing short names, c22")
+    @testset "Short names" begin
+        @test all(catch24(X) .== c24(X))
+    end
+
 
 
     println("Testing 1000×20×20 array input")

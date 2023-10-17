@@ -124,5 +124,17 @@ A feature set containing the mean (`DN_Mean`) and standard deviation (`DN_Spread
 catch24 = catch22 + DN_Mean + DN_Spread_Std
 export catch24, DN_Mean, DN_Spread_Std
 
+"""
+    c22
+The Catch22 feature set with shortened names; see [`catch22`](@ref).
+"""
+c22 = SuperFeatureSet([(x -> _catch22(x, f)) for f ∈ featurenames], short_featurenames, featuredescriptions, featurekeywords, zᶠ)
+
+"""
+    c24
+The Catch24 feature set with shortened names; see [`catch24`](@ref).
+"""
+c24 = c22 + Feature(_DN_Mean, :mean, DN_Mean.keywords, DN_Mean.description) + Feature(_DN_Spread_Std, :std, DN_Spread_Std.keywords, DN_Spread_Std.description)
+export c22, c24
 
 end

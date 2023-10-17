@@ -24,6 +24,32 @@ const featurenames = [
 
 const catch24_featurenames = [featurenames..., :DN_Mean, :DN_Spread_Std]
 
+const short_featurenames = [
+    :mode_5,
+    :mode_10,
+    :embedding_dist,
+    :acf_timescale,
+    :acf_first_min,
+    :ami2,
+    :trev,
+    :outlier_timing_pos,
+    :outlier_timing_neg,
+    :whiten_timescale,
+    :forecast_error,
+    :ami_timescale,
+    :high_fluctuation,
+    :stretch_decreasing,
+    :stretch_high,
+    :entropy_pairs,
+    :rs_range,
+    :dfa,
+    :low_freq_power,
+    :centroid_freq,
+    :transition_variance,
+    :periodicity]
+
+const short_catch24_featurenames = [short_featurenames..., :mean, :std]
+
 const featuretypes = Dict(featurenames .=> [
     #DN_HistogramMode_5
     Cdouble
