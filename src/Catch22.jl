@@ -4,6 +4,7 @@ using DimensionalData
 using Libdl
 using Requires
 using Reexport
+using TimeseriesFeatures
 using LinearAlgebra
 import Statistics: mean, std, cov
 
@@ -17,19 +18,14 @@ function __init__()
             @eval include("CovarianceImage.jl")
         end
     end
-    @require StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91" begin
-        @eval include("Autocorrelations.jl")
-    end
 end
 
-include("Features.jl")
-include("FeatureSets.jl")
-include("FeatureArrays.jl")
-include("SuperFeatures.jl")
+@reexport using TimeseriesFeatures
+import TimeseriesFeatures: zᶠ, z_score
+
 include("metadata.jl")
 include("testdata.jl")
 
-z_score(𝐱::AbstractVector) = (𝐱 .- mean(𝐱)) ./ (std(𝐱))
 nancheck(𝐱::AbstractVector) = any(isinf.(𝐱)) || any(isnan.(𝐱)) || length(𝐱) < 3
 
 function _ccall(fName::Symbol, ::Type{T}) where {T<:Integer}
@@ -65,8 +61,6 @@ end
 The set of Catch22 features without a preliminary z-score
 """
 catch22_raw = FeatureSet([(x -> _catch22(x, f)) for f ∈ featurenames], featurenames, featurekeywords, featuredescriptions)
-
-zᶠ = Feature(Catch22.z_score, :z_score, ["normalization"], "𝐱 → (𝐱 - μ(𝐱))/σ(𝐱)")
 
 """
     catch22(𝐱::Vector)

@@ -66,30 +66,6 @@ using SafeTestsets
     end
 
 
-
-    println("Testing FeatureSet operations")
-
-    @testset "FeatureSet" begin
-        𝒇₁ = FeatureSet([sum, length], [:sum, :length], [["distribution"], ["sampling"]], ["∑x¹", "∑x⁰"])
-        𝒇₂ = catch22[1:2]
-        X = randn(100, 2)
-        𝒇₃ = 𝒇₁ + 𝒇₂
-        @test_nowarn 𝒇₁(X)
-        @test_nowarn 𝒇₃(X)
-        @test getnames(𝒇₃) == [:sum, :length, :DN_HistogramMode_5, :DN_HistogramMode_10]
-        @test_nowarn 𝒇₃[:sum]
-        @test getname(𝒇₃[:sum]) == :sum
-        @test all([getname(𝒇₃[x]) == x for x in getnames(𝒇₃)])
-        @test_nowarn 𝒇₃(X)[:sum, :]
-        @test 𝒇₃(X)[:sum] == 𝒇₃(X)[:sum, :]
-        @test_nowarn 𝒇₃(X)[[:sum, :length], :]
-        @test 𝒇₃(X)[[:sum, :length]] == 𝒇₃(X)[[:sum, :length], :]
-        @test 𝒇₁ == 𝒇₃ \ 𝒇₂ == setdiff(𝒇₃, 𝒇₂)
-        @test 𝒇₃ == 𝒇₁ ∪ 𝒇₂
-        @test 𝒇₂ == 𝒇₃ ∩ 𝒇₂
-    end
-
-
     println("Testing FeatureArray indexing")
 
     @testset "FeatureArray indexing" begin
@@ -163,40 +139,6 @@ using SafeTestsets
         # @benchmark mapslices(Catch22.z_score, X, dims=1)
     end
 
-    println("Testing ACF and PACF")
-    @testset "ACF and PACF" begin
-        X = randn(1000, 10)
-        _acf = mapslices(x -> autocor(x, Catch22.ac_lags; demean=true), X; dims=1)
-        @test all(ac(X) .== _acf)
-        _pacf = mapslices(x -> pacf(x, Catch22.ac_lags; method=:regression), X; dims=1)
-        @test all(partial_ac(X) .== _pacf)
-    end
-
-    println("Testing PACF superfeatures")
-    @testset "PACF superfeatures" begin
-        X = randn(1000, 10)
-        lags = Catch22.ac_lags
-        AC_slow = FeatureSet([x -> autocor(x, [ℓ]; demean=true)[1]::Float64 for ℓ ∈ lags],
-            Symbol.(["AC_$ℓ" for ℓ ∈ lags]),
-            [["correlation"] for ℓ ∈ lags],
-            ["Autocorrelation at lag $ℓ" for ℓ ∈ lags])
-        AC_partial_slow = FeatureSet([x -> pacf(x, [ℓ]; method=:regression)[1]::Float64 for ℓ ∈ lags],
-            Symbol.(["AC_partial_$ℓ" for ℓ ∈ lags]),
-            [["correlation"] for ℓ ∈ lags],
-            ["Partial autocorrelation at lag $ℓ (regression method)" for ℓ ∈ lags])
-
-        @test all(AC_slow(X) .== ac(X))
-        @test all(AC_partial_slow(X) .== partial_ac(X))
-        println("\nFeature autocorrelation: ")
-        @time AC_slow(X)
-        println("\nSuperFeature autocorrelation: ")
-        @time ac(X)
-        println("\nFeature partial autocorrelation: ")
-        @time AC_partial_slow(X)
-        println("\nSuperfeature partial autocorrelation: ")
-        @time partial_ac(X)
-    end
-
     @testset "Multithreading" begin
         X = randn(10000)
         meths = Catch22.featurenames
@@ -228,14 +170,6 @@ using SafeTestsets
         # @profile i(X)
         # pprof()
         # @profview i(X)
-    end
-
-    @testset "RAD" begin
-        x = Catch22.testdata[:testSinusoid]
-        r = autocor(x, 1:length(x)-1)
-        τ = Catch22.firstcrossing(x)
-        @test 159 < τ < 160
-        @test_nowarn CR_RAD(x)
     end
 
 end
