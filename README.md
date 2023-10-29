@@ -1,7 +1,6 @@
 # Catch22.jl
 [![](https://img.shields.io/badge/docs-dev-blue.svg)](https://brendanjohnharris.github.io/Catch22.jl/dev)
 [![Build Status](https://github.com/brendanjohnharris/Catch22.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/brendanjohnharris/Catch22.jl/actions/workflows/CI.yml?query=branch%3Amain)
-
 [![Coverage](https://codecov.io/gh/brendanjohnharris/catch22.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/brendanjohnharris/Catch22.jl)
 [![DOI](https://zenodo.org/badge/342070622.svg)](https://zenodo.org/badge/latestdoi/342070622)
 <!-- ![build](https://github.com/brendanjohnharris/Catch22.jl/actions/workflows/CI.yml/badge.svg) -->
