@@ -1,4 +1,5 @@
 using Catch22
+using Catch22.TimeseriesFeatures
 using Documenter
 
 DocMeta.setdocmeta!(Catch22, :DocTestSetup, :(using Catch22); recursive=true)
