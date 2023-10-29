@@ -12,5 +12,5 @@ Modules = [Catch22]
 ```
 
 ```@autodocs
-Modules = [Catch22]
+Modules = [Catch22, TimeseriesFeatures, Features]
 ```
