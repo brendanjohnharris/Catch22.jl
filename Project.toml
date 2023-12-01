@@ -17,7 +17,6 @@ TimeseriesFeatures = "f3112013-b923-4dfa-b867-8806c885f823"
 catch22_jll = "8a07c0c5-99ad-56cb-bc82-72eed1bb61ce"
 
 [compat]
-DelimitedFiles = "1.9"
 DimensionalData = "0.19 - 0.25"
 ProgressLogging = "0.1"
 Reexport = "0.2, 1"
