@@ -88,7 +88,8 @@ using SafeTestsets
     println("Testing Feature evaluation with DimArrays")
     @testset "DimArrays" begin
         x = DimArray(randn(100), (Dim{:x}(1:100),))
-        @test collect(CO_f1ecac(x)) == CO_f1ecac(x |> vec)
+        @test first(CO_f1ecac(x)) == CO_f1ecac(x |> vec)
+        @test length(CO_f1ecac(x)) == 1
         @test catch22(x) == catch22(x |> vec)
     end
 
