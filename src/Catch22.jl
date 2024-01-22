@@ -11,10 +11,11 @@ import Statistics: mean, std, cov
 function __init__()
     catch22_jll.__init__()
     lib = dlopen(ccatch22)
-    global fbindings = Dict{Symbol,Ptr{Cvoid}}(f => dlsym(lib, f) for f ∈ catch24_featurenames)
+    global fbindings = Dict{Symbol, Ptr{Cvoid}}(f => dlsym(lib, f)
+                                                for f in catch24_featurenames)
 
-    @require Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80" begin
-        @require Clustering = "aaaa29a8-35af-508c-8bc3-b662a17a0fe5" begin
+    @require Plots="91a5bcdd-55d7-5caf-9e0b-520d859cae80" begin
+        @require Clustering="aaaa29a8-35af-508c-8bc3-b662a17a0fe5" begin
             @eval include("CovarianceImage.jl")
         end
     end
@@ -28,13 +29,13 @@ include("testdata.jl")
 
 nancheck(𝐱::AbstractVector) = any(isinf.(𝐱)) || any(isnan.(𝐱)) || length(𝐱) < 3
 
-function _ccall(fName::Symbol, ::Type{T}) where {T<:Integer}
+function _ccall(fName::Symbol, ::Type{T}) where {T <: Integer}
     f(𝐱)::T = ccall(fbindings[fName], Cint, (Ptr{Array{Cint}}, Cint), 𝐱, Int(size(𝐱, 1)))
 end
-function _ccall(fName::Symbol, ::Type{T}) where {T<:AbstractFloat}
-    f(𝐱)::T = ccall(fbindings[fName], Cdouble, (Ptr{Array{Cdouble}}, Cint), 𝐱, Int(size(𝐱, 1)))
+function _ccall(fName::Symbol, ::Type{T}) where {T <: AbstractFloat}
+    f(𝐱)::T = ccall(fbindings[fName], Cdouble, (Ptr{Array{Cdouble}}, Cint), 𝐱,
+                    Int(size(𝐱, 1)))
 end
-
 
 """
     _catch22(𝐱::AbstractArray{Float64}, fName::Symbol)
@@ -53,14 +54,15 @@ function _catch22(𝐱::AbstractVector, fName::Symbol)
     fType = featuretypes[fName]
     return _ccall(fName, fType)(𝐱)
 end
-function _catch22(X::AbstractArray{Float64,2}, fName::Symbol)::AbstractArray{Float64,2}
-    mapslices(𝐱 -> _catch22(𝐱, fName), X, dims=[1])
+function _catch22(X::AbstractArray{Float64, 2}, fName::Symbol)::AbstractArray{Float64, 2}
+    mapslices(𝐱 -> _catch22(𝐱, fName), X, dims = [1])
 end
 
 """
 The set of Catch22 features without a preliminary z-score
 """
-catch22_raw = FeatureSet([(x -> _catch22(x, f)) for f ∈ featurenames], featurenames, featurekeywords, featuredescriptions)
+catch22_raw = FeatureSet([(x -> _catch22(x, f)) for f in featurenames], featurenames,
+                         featurekeywords, featuredescriptions)
 
 """
     catch22(𝐱::Vector)
@@ -81,15 +83,15 @@ F = catch22(X)
 F = catch22[:DN_HistogramMode_5](X)
 ```
 """
-catch22 = SuperFeatureSet([(x -> _catch22(x, f)) for f ∈ featurenames], featurenames, featuredescriptions, featurekeywords, zᶠ)
+catch22 = SuperFeatureSet([(x -> _catch22(x, f)) for f in featurenames], featurenames,
+                          featuredescriptions, featurekeywords, zᶠ)
 export catch22
 
-
-for f ∈ featurenames
+for f in featurenames
     eval(quote
-        $f = catch22[$(Meta.quot(f))]
-        export $f
-    end)
+             $f = catch22[$(Meta.quot(f))]
+             export $f
+         end)
 end
 
 """
@@ -107,9 +109,12 @@ DN_HistogramMode_5
 
 # Special cases for DN_Mean and DN_Spread_Std, and shouldn't z_score the vector
 _DN_Mean(𝐱::AbstractVector)::Float64 = nancheck(𝐱) ? NaN : (𝐱 |> _ccall(:DN_Mean, Cdouble))
-_DN_Spread_Std(𝐱::AbstractVector)::Float64 = nancheck(𝐱) ? NaN : (𝐱 |> _ccall(:DN_Spread_Std, Cdouble))
-DN_Mean = Feature(_DN_Mean, :DN_Mean, ["distribution", "location", "raw"], "Arithmetic mean of time-series values")
-DN_Spread_Std = Feature(_DN_Spread_Std, :DN_Spread_Std, ["distribution", "spread", "raw"], "Sample standard deviation of time-series values")
+_DN_Spread_Std(𝐱::AbstractVector)::Float64 = nancheck(𝐱) ? NaN :
+                                             (𝐱 |> _ccall(:DN_Spread_Std, Cdouble))
+DN_Mean = Feature(_DN_Mean, :DN_Mean, ["distribution", "location", "raw"],
+                  "Arithmetic mean of time-series values")
+DN_Spread_Std = Feature(_DN_Spread_Std, :DN_Spread_Std, ["distribution", "spread", "raw"],
+                        "Sample standard deviation of time-series values")
 
 """
     catch24 isa FeatureSet
@@ -122,13 +127,15 @@ export catch24, DN_Mean, DN_Spread_Std
     c22
 The Catch22 feature set with shortened names; see [`catch22`](@ref).
 """
-c22 = SuperFeatureSet([(x -> _catch22(x, f)) for f ∈ featurenames], short_featurenames, featuredescriptions, featurekeywords, zᶠ)
+c22 = SuperFeatureSet([(x -> _catch22(x, f)) for f in featurenames], short_featurenames,
+                      featuredescriptions, featurekeywords, zᶠ)
 
 """
     c24
 The Catch24 feature set with shortened names; see [`catch24`](@ref).
 """
-c24 = c22 + Feature(_DN_Mean, :mean, DN_Mean.keywords, DN_Mean.description) + Feature(_DN_Spread_Std, :std, DN_Spread_Std.keywords, DN_Spread_Std.description)
+c24 = c22 + Feature(_DN_Mean, :mean, DN_Mean.keywords, DN_Mean.description) +
+      Feature(_DN_Spread_Std, :std, DN_Spread_Std.keywords, DN_Spread_Std.description)
 export c22, c24
 
 end
