@@ -9,7 +9,7 @@ function clustercovariance(Σ²)
     if !issymmetric(Dr)
         @warn "Correlation distance matrix is not symmetric, so not clustering"
     end
-    Clustering.hclust(Dr; linkage=:average, branchorder=:optimal)
+    Clustering.hclust(Dr; linkage = :average, branchorder = :optimal)
 end
 
 """
@@ -27,7 +27,10 @@ Either provide as positional arguments a vector `f` of N row names and an N×_ m
 """
 covarianceimage
 @userplot CovarianceImage
-Plots.@recipe function f(g::CovarianceImage; palette=[:cornflowerblue, :crimson, :forestgreen], colormode=:top, colorbargrad=:binary, donames=true, docluster=true, verbose=true, dendrogram=false)
+Plots.@recipe function f(g::CovarianceImage;
+                         palette = [:cornflowerblue, :crimson, :forestgreen],
+                         colormode = :top, colorbargrad = :binary, donames = true,
+                         docluster = true, verbose = true, dendrogram = false)
     if g.args[1] isa AbstractFeatureArray || g.args[1] isa AbstractDimArray
         f, Σ² = string.(getdim(g.args[1], 1)), g.args[1] |> Array
     elseif length(g.args) == 2 && g.args[2] isa AbstractMatrix
@@ -38,11 +41,12 @@ Plots.@recipe function f(g::CovarianceImage; palette=[:cornflowerblue, :crimson,
 
     issymmetric(Σ²) || (Σ² = cov(Σ²'))
 
-    any(diag(Σ²) .== 0) && @warn "Covariance matrix is not positive definite, which may cause an error"
+    any(diag(Σ²) .== 0) &&
+        @warn "Covariance matrix is not positive definite, which may cause an error"
     linecolor --> nothing
     if docluster == true
         idxs = clustercovariance(Σ²).order
-    elseif docluster isa Union{AbstractVector,Tuple}
+    elseif docluster isa Union{AbstractVector, Tuple}
         idxs = docluster # Precomputed indices
     elseif docluster isa Clustering.Hclust
         idxs = docluster.order
@@ -58,11 +62,14 @@ Plots.@recipe function f(g::CovarianceImage; palette=[:cornflowerblue, :crimson,
         colorbar --> true
     else
         λ = (eigvals ∘ Symmetric ∘ Array)(Σ̂²)
-        λi = sortperm(abs.(λ), rev=true)
+        λi = sortperm(abs.(λ), rev = true)
         λ = λ[λi]
         P = (eigvecs ∘ Symmetric ∘ Array)(Σ̂²)[:, λi] # Now sorted by decreasing eigenvalue norm
-        vidxs = sortperm(abs.(P[:, 1]), rev=true)
-        verbose && isnothing(printstyled("Feature weights:\n", color=:red, bold=true)) && display(vcat(hcat("Feature", ["PC$i" for i ∈ 1:N]...), hcat(f̂[vidxs], round.(P[vidxs, 1:N], sigdigits=3))))
+        vidxs = sortperm(abs.(P[:, 1]), rev = true)
+        verbose &&
+            isnothing(printstyled("Feature weights:\n", color = :red, bold = true)) &&
+            display(vcat(hcat("Feature", ["PC$i" for i in 1:N]...),
+                         hcat(f̂[vidxs], round.(P[vidxs, 1:N], sigdigits = 3))))
         P = abs.(P)
         # if colormode isa Matrix # Supply custom coloring matrix. Should be an nfeature×ncolor matrix
         #     P = colormode
@@ -71,16 +78,16 @@ Plots.@recipe function f(g::CovarianceImage; palette=[:cornflowerblue, :crimson,
         #     𝑓′ = parse.(Colors.XYZ, palette[1:N]);
         if colormode == :top # * Color by the number of PC's given by the length of the color palette
             P = P[:, 1:N]
-            P̂ = P .^ 2.0 ./ sum(P .^ 2.0, dims=2)
+            P̂ = P .^ 2.0 ./ sum(P .^ 2.0, dims = 2)
             # Square the loadings, since they are added in quadrature. Maybe not a completely faithful representation of the PC proportions, but should get the job done.
             𝑓′ = parse.(Colors.XYZ, palette[1:N])
         elseif colormode == :all # * Color by all PC's. This can end up very brown
             Σ̂′² = Diagonal(abs.(λ))
-            P̂ = P .^ 2.0 ./ sum(P .^ 2.0, dims=2)
+            P̂ = P .^ 2.0 ./ sum(P .^ 2.0, dims = 2)
             p = fill(:black, size(P, 2))
             p[1:N] = palette[1:N]
             𝑓′ = parse.(Colors.XYZ, p)
-            [𝑓′[i] = Σ̂′²[i, i] * 𝑓′[i] for i ∈ 1:length(𝑓′)]
+            [𝑓′[i] = Σ̂′²[i, i] * 𝑓′[i] for i in 1:length(𝑓′)]
         end
         𝑓 = Vector{eltype(𝑓′)}(undef, size(P̂, 1))
         try # Load colors by PC weights
@@ -88,13 +95,13 @@ Plots.@recipe function f(g::CovarianceImage; palette=[:cornflowerblue, :crimson,
         catch
             # Equivalent but slower
             @info "Iterating to load covariances"
-            for ii ∈ 1:length(𝑓)
-                𝑓[ii] = sum([P̂[ii, jj] * 𝑓′[jj] for jj ∈ 1:length(𝑓′)])
+            for ii in 1:length(𝑓)
+                𝑓[ii] = sum([P̂[ii, jj] * 𝑓′[jj] for jj in 1:length(𝑓′)])
             end
         end
 
         H = Array{Colors.XYZA}(undef, size(Σ̂²))
-        for (i, j) ∈ Tuple.(CartesianIndices(H)) # Apply the correlations as transparencies
+        for (i, j) in Tuple.(CartesianIndices(H)) # Apply the correlations as transparencies
             J = (𝑓[i] + 𝑓[j]) / 2
             H[i, j] = Colors.XYZA(J.x, J.y, J.z, A[i, j])
         end
@@ -106,7 +113,7 @@ Plots.@recipe function f(g::CovarianceImage; palette=[:cornflowerblue, :crimson,
             seriescolor --> colorbargrad
         end
         if backend() == Plots.GRBackend() # For some reason, GR does heatmaps differently
-            xs = 0.5:1:size(H, 1)+0.5
+            xs = 0.5:1:(size(H, 1) + 0.5)
         else
             xs = 1:size(H, 1)
         end
@@ -127,7 +134,7 @@ Plots.@recipe function f(g::CovarianceImage; palette=[:cornflowerblue, :crimson,
         markercolor := colorbargrad
         (zeros(2), zeros(2))
     end
-    for i ∈ 1:N
+    for i in 1:N
         @series begin
             seriestype := :shape
             if colormode != :raw
