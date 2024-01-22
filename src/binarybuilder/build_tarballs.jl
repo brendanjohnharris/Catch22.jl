@@ -7,7 +7,8 @@ version = v"0.4.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/chlubba/catch22.git", "2e1a271c6a7437b6a4a754e1adc7e34d7a224c01")
+    GitSource("https://github.com/chlubba/catch22.git",
+              "2e1a271c6a7437b6a4a754e1adc7e34d7a224c01"),
 ]
 
 # Bash recipe for building across all platforms
@@ -26,12 +27,12 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libcatch22", :ccatch22)
+    LibraryProduct("libcatch22", :ccatch22),
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
-]
+dependencies = Dependency[]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"9.1.0", julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               preferred_gcc_version = v"9.1.0", julia_compat = "1.6")
