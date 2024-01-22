@@ -11,18 +11,17 @@ using SafeTestsets
     function isnearlyequalorallnan(a::AbstractArray, b::AbstractArray)
         replace!(a, NaN => 0.0)
         replace!(b, NaN => 0.0)
-        all(isapprox.(a, b, atol=1e-6))
+        all(isapprox.(a, b, atol = 1e-6))
     end
     function isnearlyequalorallnan(a::Real, b::Real)
-        isapprox(a, b, atol=1e-6) || (isnan(a) && isnan(b))
+        isapprox(a, b, atol = 1e-6) || (isnan(a) && isnan(b))
     end
 
     # Test features one by one
     println("Testing individual features")
-    @testset "Feature $(getname(f))" for f ∈ catch24
+    @testset "Feature $(getname(f))" for f in catch24
         @test isnearlyequalorallnan(f(testdata[:test]), testoutput[:test][getname(f)])
     end
-
 
     # Test catch22, time series by time series
     catch24(testdata[:test])
@@ -40,8 +39,6 @@ using SafeTestsets
         @test testFeatures(f)
     end
 
-
-
     # Test catch22 on a matrix
     println("Testing 1000×100 array input")
     catch22(randn(10, 10))
@@ -56,15 +53,12 @@ using SafeTestsets
         @test all(catch24(X) .== c24(X))
     end
 
-
-
     println("Testing 1000×20×20 array input")
     catch22(randn(10, 10, 10))
     X = randn(1000, 20, 20)
     @testset "Arrays" begin
-        @test @time catch24(X) isa FeatureArray{T,3} where {T}
+        @test @time catch24(X) isa FeatureArray{T, 3} where {T}
     end
-
 
     println("Testing FeatureArray indexing")
 
@@ -98,7 +92,6 @@ using SafeTestsets
         @test catch22(x) == catch22(x |> vec)
     end
 
-
     println("Testing CovarianceImage")
     @testset "CovarianceImage" begin
         using Plots
@@ -106,20 +99,23 @@ using SafeTestsets
         X = hcat(randn(100, 100), 1:100)
         F = catch22(X)
         verbose = false
-        @test covarianceimage(F; colormode=:top, verbose) isa Plots.Plot
-        @test covarianceimage(F; colormode=:all, verbose) isa Plots.Plot
-        @test covarianceimage(F; colormode=:raw, verbose, colorbargrad=:viridis) isa Plots.Plot
+        @test covarianceimage(F; colormode = :top, verbose) isa Plots.Plot
+        @test covarianceimage(F; colormode = :all, verbose) isa Plots.Plot
+        @test covarianceimage(F; colormode = :raw, verbose, colorbargrad = :viridis) isa
+              Plots.Plot
     end
-
 
     println("Testing SuperFeatures")
     @testset "SuperFeatures" begin
         𝐱 = rand(1000, 2)
         @test_nowarn Catch22.zᶠ(𝐱)
-        μ = SuperFeature(Catch22.mean, :μ, ["0"], "Mean value of the z-scored time series", super=Catch22.zᶠ)
-        σ = SuperFeature(Catch22.std, :σ, ["1"], "Standard deviation of the z-scored time series"; super=Catch22.zᶠ)
+        μ = SuperFeature(Catch22.mean, :μ, ["0"], "Mean value of the z-scored time series",
+                         super = Catch22.zᶠ)
+        σ = SuperFeature(Catch22.std, :σ, ["1"],
+                         "Standard deviation of the z-scored time series";
+                         super = Catch22.zᶠ)
         𝒇 = SuperFeatureSet([μ, σ])
-        @test all(isapprox.(𝒇(𝐱), [0.0 0.0; 1.0 1.0]; atol=1e-9))
+        @test all(isapprox.(𝒇(𝐱), [0.0 0.0; 1.0 1.0]; atol = 1e-9))
     end
 
     println("Testing Catch22 SuperFeatures")
@@ -128,8 +124,8 @@ using SafeTestsets
         catch22_raw² = vcat(fill(Catch22.catch22_raw, 22)...)
         X = rand(1000, 10)
         @test catch22²(X) !== catch22_raw²(X)
-        @test catch22_raw²(X) !== catch22_raw²(mapslices(Catch22.z_score, X, dims=1))
-        @test catch22²(X) == catch22_raw²(mapslices(Catch22.z_score, X, dims=1))
+        @test catch22_raw²(X) !== catch22_raw²(mapslices(Catch22.z_score, X, dims = 1))
+        @test catch22²(X) == catch22_raw²(mapslices(Catch22.z_score, X, dims = 1))
         # @test catch22²[1:10] isa SuperFeatureSet # Ideally
         @test catch22_raw²[1:10](X) == catch22_raw²(X)[1:10, :]
 
@@ -146,18 +142,18 @@ using SafeTestsets
         window = 100
         f(X) =
             for j in eachindex(meths)
-                Threads.@threads for i in 1:size(X, 1)-window
-                    @inbounds cres[i+window, j] = catch22[meths[j]](X[i:i+window])
+                Threads.@threads for i in 1:(size(X, 1) - window)
+                    @inbounds cres[i + window, j] = catch22[meths[j]](X[i:(i + window)])
                 end
             end
 
-        g(X) = Threads.@threads for i in 1:size(X, 1)-window
-            @inbounds cres[i+window, :] = catch22[meths](X[i:i+window])
+        g(X) = Threads.@threads for i in 1:(size(X, 1) - window)
+            @inbounds cres[i + window, :] = catch22[meths](X[i:(i + window)])
         end
 
-        h(X) = catch22[meths]([X[i:i+window] for i in 1:size(X, 1)-window])
+        h(X) = catch22[meths]([X[i:(i + window)] for i in 1:(size(X, 1) - window)])
 
-        i(X) = catch22[meths](@views [X[i:i+window] for i in 1:size(X, 1)-window])
+        i(X) = catch22[meths](@views [X[i:(i + window)] for i in 1:(size(X, 1) - window)])
 
         # BenchmarkTools.DEFAULT_PARAMETERS.seconds = 5
         @test_nowarn f(X) # @benchmark f(X)
@@ -171,5 +167,4 @@ using SafeTestsets
         # pprof()
         # @profview i(X)
     end
-
 end
