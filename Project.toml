@@ -17,7 +17,7 @@ TimeseriesFeatures = "f3112013-b923-4dfa-b867-8806c885f823"
 catch22_jll = "8a07c0c5-99ad-56cb-bc82-72eed1bb61ce"
 
 [compat]
-DimensionalData = "0.19 - 0.25"
+DimensionalData = "0.19, 0.20, 0.21, 0.22, 0.23, 0.24, 0.25, 0.26"
 ProgressLogging = "0.1"
 Reexport = "0.2, 1"
 Requires = "1"

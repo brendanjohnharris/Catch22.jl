@@ -20,6 +20,10 @@ using SafeTestsets
     # Test features one by one
     println("Testing individual features")
     @testset "Feature $(getname(f))" for f in catch24
+        if f in catch22
+            @inferred Catch22._catch22(testdata[:test], getname(f))
+            @inferred Catch22._catch22(randn(100, 10), getname(f))
+        end
         @test isnearlyequalorallnan(f(testdata[:test]), testoutput[:test][getname(f)])
     end
 

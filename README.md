@@ -9,6 +9,8 @@ A Julia package wrapping [_catch22_](https://www.github.com/chlubba/catch22), wh
 
 The [_catch22_](https://www.github.com/chlubba/catch22) repository provides these 22 features, originally coded in Matlab as part of the [_hctsa_](https://github.com/benfulcher/hctsa) toolbox, as C functions (in addition to Matlab and Python wrappers). This package simply uses Julia's `ccall` to wrap these C functions from a shared library that is accessed through [catch22_jll](https://github.com/JuliaBinaryWrappers/catch22_jll.jl) and compiled by the fantastic [BinaryBuilder](https://github.com/JuliaPackaging/BinaryBuilder.jl) package.
 
+Below we provide a brief getting-started guide to using Catch22.jl. For more detailed information on the _catch22_ feature set, such as in-depth descriptions of each feature and a list of publications that use _catch22_, see the [_catch22_ wiki](https://time-series-features.gitbook.io/catch22).
+
 <br>
 
 # Usage

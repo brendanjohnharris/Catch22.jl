@@ -48,13 +48,13 @@ Evaluate the feature `fName` on the single time series `𝐱`. See `Catch22.feat
 Catch22._catch22(𝐱, :DN_HistogramMode_5)
 ```
 """
-function _catch22(𝐱::AbstractVector, fName::Symbol)
+function _catch22(𝐱::AbstractVector, fName::Symbol)::Float64
     nancheck(𝐱) && return NaN
     𝐱 = 𝐱 |> Vector{Float64}
     fType = featuretypes[fName]
     return _ccall(fName, fType)(𝐱)
 end
-function _catch22(X::AbstractArray{Float64, 2}, fName::Symbol)::AbstractArray{Float64, 2}
+function _catch22(X::AbstractMatrix, fName::Symbol)::Matrix{Float64}
     mapslices(𝐱 -> _catch22(𝐱, fName), X, dims = [1])
 end
 
