@@ -6,7 +6,7 @@ test_hash = artifact_hash("testdata", artifact_toml)
 
 if test_hash == nothing || !artifact_exists(test_hash)
     test_hash = create_artifact() do artifact_dir
-        test_url_base = "https://raw.githubusercontent.com/brendanjohnharris/catch22/8c76cabb12b9005990a357fd907c37ce8858510d/testData/" # v0.4.0
+        test_url_base = "https://raw.githubusercontent.com/brendanjohnharris/catch22/8c76cabb12b9005990a357fd907c37ce8858510d/testData" # v0.4.0
         testfiles = [
             "test.txt",
             "test2.txt",
@@ -18,7 +18,7 @@ if test_hash == nothing || !artifact_exists(test_hash)
             "test_output.txt",
             "test2_output.txt",
             "testShort_output.txt",
-            "testSinusoid_output.txt",
+            "testSinusoid_output.txt"
         ]
         [download("$(test_url_base)/$f", joinpath(artifact_dir, f)) for f in testfiles]
     end
