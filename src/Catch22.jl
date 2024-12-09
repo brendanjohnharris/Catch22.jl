@@ -108,9 +108,13 @@ f = DN_HistogramMode_5(𝐱)
 DN_HistogramMode_5
 
 # Special cases for DN_Mean and DN_Spread_Std, and shouldn't z_score the vector
-_DN_Mean(𝐱::AbstractVector)::Float64 = nancheck(𝐱) ? NaN : (𝐱 |> _ccall(:DN_Mean, Cdouble))
-_DN_Spread_Std(𝐱::AbstractVector)::Float64 = nancheck(𝐱) ? NaN :
-                                             (𝐱 |> _ccall(:DN_Spread_Std, Cdouble))
+_DN_Mean(𝐱::AbstractVector{<:Float64})::Float64 = nancheck(𝐱) ? NaN :
+                                                  (𝐱 |> _ccall(:DN_Mean, Cdouble))
+_DN_Spread_Std(𝐱::AbstractVector{<:Float64})::Float64 = nancheck(𝐱) ? NaN :
+                                                        (𝐱 |>
+                                                         _ccall(:DN_Spread_Std, Cdouble))
+_DN_Mean(𝐱::AbstractVector{<:Real}) = _DN_Mean(Float64.(𝐱))
+_DN_Spread_Std(𝐱::AbstractVector{<:Real}) = _DN_Spread_Std(Float64.(𝐱))
 DN_Mean = Feature(_DN_Mean, :DN_Mean, ["distribution", "location", "raw"],
                   "Arithmetic mean of time-series values")
 DN_Spread_Std = Feature(_DN_Spread_Std, :DN_Spread_Std, ["distribution", "spread", "raw"],

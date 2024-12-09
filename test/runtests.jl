@@ -64,6 +64,18 @@ using SafeTestsets
         @test @time catch24(X) isa FeatureArray{T, 3} where {T}
     end
 
+    println("Testing input types")
+    X = rand(Int16, 10, 10, 10)
+    _F = catch24(X)
+    @testset "Types" begin
+        @test eltype(_F) <: Float64
+        for T in [Int, Int32, Float32, Float64]
+            F = catch24(T.(X))
+            @test eltype(F) <: Float64
+            @test F ≈ _F
+        end
+    end
+
     println("Testing FeatureArray indexing")
 
     @testset "FeatureArray indexing" begin
