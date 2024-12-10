@@ -6,7 +6,7 @@ using BenchmarkTools
 featureset = Catch22.catch22_raw
 N⃗ = Int.(round.(exp10.(2:0.25:5)));
 scaling = DimArray(zeros(length(featureset), 2, length(N⃗)),
-                   (Dim{:feature}(getnames(featureset)), Dim{:resource}([:time, :memory]),
+                   (Feat(getnames(featureset)), Dim{:resource}([:time, :memory]),
                     Dim{:length}(N⃗)))
 
 for f in featureset
@@ -25,7 +25,7 @@ save(file, Dict("scaling" => scaling))
 begin
     f = Figure()
     ax = Axis(f[1, 1]; xscale = log10, yscale = log10)
-    map(eachslice(scaling[resource = At(:time)], dims = :feature)) do x
+    map(eachslice(scaling[resource = At(:time)], dims = Feat)) do x
         lines!(ax, x)
     end
 end
