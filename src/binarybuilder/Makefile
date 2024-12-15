@@ -1,17 +1,22 @@
-CC = gcc
-CFLAGS = -std=c99 -fPIC -Wall -Wextra -O2 -g
-LDFLAGS = -shared
+CC = cc
+CFLAGS = -std=c11 -fPIC -Wall -Wextra -g -O2 -lm
+LDFLAGS = -shared -lm
 RM = rm -f
-TARGET_LIB = "libcatch22.dylib"
+TARGET_LIB = "lib$(SRC_NAME).$(dlext)"
 
-SRCS = main.c CO_AutoCorr.c DN_Mean.c DN_Spread_Std.c DN_HistogramMode_10.c DN_HistogramMode_5.c DN_OutlierInclude.c FC_LocalSimple.c IN_AutoMutualInfoStats.c MD_hrv.c PD_PeriodicityWang.c SB_BinaryStats.c SB_CoarseGrain.c SB_MotifThree.c SB_TransitionMatrix.c SC_FluctAnal.c SP_Summaries.c butterworth.c fft.c helper_functions.c histcounts.c splinefit.c stats.c
+SRCS := $(shell find ./ -name "*.c" ! -name "main.c")
 
 OBJS = $(SRCS:.c=.o)
 .PHONY: all;
 all: ${TARGET_LIB}
 $(TARGET_LIB): $(OBJS)
-	$(CC) ${LDFLAGS} -o $@ $^
+	$(CC) -o $@ $^ $(LDFLAGS) $(FLAGS)
 $(SRCS:.c=.d):%.d:%.c
-	$(CC) $(CFLAGS) -MM $< >$@\ninclude $(SRCS:.c=.d)
+	$(CC) $(CFLAGS) $(FLAGS) -MM $< >$@
+	include $(SRCbS:.c=.d)
 .PHONY: clean
-clean:-${RM} ${TARGET_LIB} ${OBJS} $(SRCS:.c=.d)
+clean:
+	$(RM) $(TARGET_LIB) $(OBJS) $(SRCS:.c=.d)
+.PHONY: install
+install:
+	install -Dvm 755 "./lib${SRC_NAME}.$(dlext)" "$(libdir)/lib$(SRC_NAME).$(dlext)"

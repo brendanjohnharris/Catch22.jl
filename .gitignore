@@ -30,3 +30,9 @@ Artifacts.toml
 profile.pb.gz
 
 better_PD_wang.jl
+temp.jl
+.CondaPkg
+scrap.jl
+temp.py
+
+test/performance/
