@@ -43,7 +43,6 @@ println("Testing individual features")
 end
 
 # Test catch22, time series by time series
-catch24(testdata[:test])
 println("Testing sample datasets")
 @testitem "Dataset $f" setup=[Setup] begin
     for f in testnames
