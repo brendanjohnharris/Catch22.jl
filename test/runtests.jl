@@ -78,7 +78,6 @@ println("Testing short names, c22")
 end
 
 println("Testing 1000×20×20 array input")
-catch22(randn(10, 10, 10))
 @testitem "Arrays" setup=[Setup] begin
     X = randn(1000, 20, 20)
     @test @time catch24(X) isa FeatureArray{T, 3} where {T}
