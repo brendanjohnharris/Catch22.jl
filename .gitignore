@@ -35,4 +35,10 @@ temp.jl
 scrap.jl
 temp.py
 
-test/performance/
+test/performance/*
+!test/performance/multi_feature_bare.jl
+!test/performance/multi_feature.jl
+!test/performance/single_feature.jl
+!test/performance/single_feature_bare.jl
+!test/performance/multi_feature.py
+!test/performance/single_feature.py

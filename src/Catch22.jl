@@ -49,7 +49,6 @@ Catch22._catch22(𝐱, :DN_HistogramMode_5)
 """
 function _catch22(𝐱::AbstractVector, fName::Symbol)::Float64
     nancheck(𝐱) && return NaN
-    # 𝐱 = 𝐱 |> Vector{Float64}
     fType = featuretypes[fName]
     return _ccall(fName, fType)(𝐱)
 end
@@ -95,7 +94,7 @@ export catch22
 
 for f in featurenames
     eval(quote
-             const $f = catch22[$(Meta.quot(f))]
+             $f = catch22[$(Meta.quot(f))]
              export $f
          end)
 end

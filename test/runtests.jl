@@ -218,14 +218,17 @@ println("Testing performance")
 
     m = Catch22._ccall(fname, Float64)
     t = @timed m(dataset)
+    t = @timed m(dataset)
     tm = t.time
     @test t.bytes < 500
 
     t = @timed Catch22._catch22(dataset, fname)
+    t = @timed Catch22._catch22(dataset, fname)
     @test t.time≈tm rtol=0.25 # The nancheck takes some time
     @test t.bytes < 500
 
-    m = getmethod(Catch22.catch22_raw[:DN_HistogramMode_10])
+    m = getmethod(Catch22.catch22_raw[fname])
+    t = @timed m(dataset)
     t = @timed m(dataset)
     @test t.time≈tm rtol=0.25
     @test t.bytes < 500
@@ -238,12 +241,8 @@ println("Testing performance")
     @test median(ta).time≈median(tb).time rtol=0.05
     tz = median(tb).time / 1e9
 
-    m = DN_HistogramMode_10 |> getmethod
-    # m = (getmethod ∘ getfeature)(feature) ∘ getsuper(feature)
-    # y = getsuper(feature)(dataset)
-    # g = (getmethod ∘ getfeature)(feature)
-    # @test g == getmethod(Catch22.catch22_raw[:DN_HistogramMode_10])
-    # @time g(y)
+    m = feature |> getmethod
+    t = @timed m(dataset)
     t = @timed m(dataset)
     @test t.time≈(tm + tz) rtol=0.25 # Feature time + zscore time
     @test t.bytes < Base.sizeof(dataset) + 5000 # Just one deepcopy of the dataset, for the zscore

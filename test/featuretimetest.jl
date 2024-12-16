@@ -1,4 +1,7 @@
-using Catch22, CairoMakie, Normalization, Statistics
+using Catch22
+using CairoMakie
+using Normalization
+using Statistics
 
 # ? Calculate
 𝒳 = round.(Int, 1:0.1:5 .|> exp10) .|> randn

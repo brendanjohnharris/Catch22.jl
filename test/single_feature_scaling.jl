@@ -2,6 +2,8 @@ using Catch22
 using Catch22.DimensionalData
 using Catch22.DelimitedFiles
 using BenchmarkTools
+using JLD2
+using CairoMakie
 
 featureset = Catch22.catch22_raw
 N⃗ = Int.(round.(exp10.(2:0.25:5)));
