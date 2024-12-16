@@ -32,7 +32,7 @@ Plots.@recipe function f(g::CovarianceImage;
                          colormode = :top, colorbargrad = :binary, donames = true,
                          docluster = true, verbose = true, dendrogram = false)
     if g.args[1] isa AbstractFeatureArray || g.args[1] isa AbstractDimArray
-        f, Σ² = string.(getdim(g.args[1], 1)), g.args[1] |> Array
+        f, Σ² = string.(lookup(g.args[1], 1)), g.args[1] |> Array
     elseif length(g.args) == 2 && g.args[2] isa AbstractMatrix
         f, Σ² = g.args[1], g.args[2] |> Array
     else
