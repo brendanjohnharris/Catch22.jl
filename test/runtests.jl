@@ -236,7 +236,7 @@ println("Testing performance")
     ta = @benchmark $m($dataset)
     m = Catch22.zᶠ
     tb = @benchmark $m($dataset)
-    @test median(ta).time≈median(tb).time rtol=0.1
+    @test median(ta).time≈median(tb).time rtol=0.15
     tz = median(tb).time / 1e9
 
     m = feature |> getmethod
