@@ -18,7 +18,7 @@ if test_hash == nothing || !artifact_exists(test_hash)
             "test_output.txt",
             "test2_output.txt",
             "testShort_output.txt",
-            "testSinusoid_output.txt"
+            "testSinusoid_output.txt",
         ]
         [download("$(test_url_base)/$f", joinpath(artifact_dir, f)) for f in testfiles]
     end
@@ -27,18 +27,24 @@ end
 
 test_datadir = artifact_path(test_hash)
 
-const testnames = [:test
-                   :test2
-                   :testInf
-                   :testInfMinus
-                   :testNaN
-                   :testShort
-                   :testSinusoid]
+const testnames = [
+    :test
+    :test2
+    :testInf
+    :testInfMinus
+    :testNaN
+    :testShort
+    :testSinusoid
+]
 
 function loaddata(x)
-    reduce(vcat,
-           readdlm(normpath(joinpath(test_datadir, String(x) * ".txt")), ' ', Float64,
-                   '\n'))
+    return reduce(
+        vcat,
+        readdlm(
+            normpath(joinpath(test_datadir, String(x) * ".txt")), ' ', Float64,
+            '\n'
+        )
+    )
 end
 function loadoutput(x)
     file = normpath(joinpath(test_datadir, String(x) * "_output.txt"))

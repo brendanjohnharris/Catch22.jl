@@ -15,10 +15,10 @@ using TestItemRunner
     function isnearlyequalorallnan(a::AbstractArray, b::AbstractArray)
         replace!(a, NaN => 0.0)
         replace!(b, NaN => 0.0)
-        all(isapprox.(a, b, atol = 1e-6))
+        all(isapprox.(a, b, atol = 1.0e-6))
     end
     function isnearlyequalorallnan(a::Real, b::Real)
-        isapprox(a, b, atol = 1e-6) || (isnan(a) && isnan(b))
+        isapprox(a, b, atol = 1.0e-6) || (isnan(a) && isnan(b))
     end
     function testFeatures(t::Symbol)
         @time f = catch22(testdata[t])
@@ -32,7 +32,7 @@ using TestItemRunner
 end
 # Test features one by one
 println("Testing individual features")
-@testitem "Feature $(getname(f))" setup=[Setup] begin
+@testitem "Feature $(getname(f))" setup = [Setup] begin
     for f in catch24
         if f in catch22
             @inferred Catch22._catch22(testdata[:test], getname(f))
@@ -44,7 +44,7 @@ end
 
 # Test catch22, time series by time series
 println("Testing sample datasets")
-@testitem "Dataset $f" setup=[Setup] begin
+@testitem "Dataset $f" setup = [Setup] begin
     for f in testnames
         @test testFeatures(f)
     end
@@ -52,7 +52,7 @@ end
 
 # Test catch22 on a vector
 println("Testing 1000×100 array input")
-@testitem "Vector" setup=[Setup] begin
+@testitem "Vector" setup = [Setup] begin
     catch22(randn(100))
     X = randn(1000)
     @test @time catch24(X) isa FeatureVector
@@ -62,7 +62,7 @@ end
 
 # Test catch22 on a matrix
 println("Testing 1000×100 array input")
-@testitem "Matrices" setup=[Setup] begin
+@testitem "Matrices" setup = [Setup] begin
     catch22(randn(10, 10))
     X = randn(1000, 100)
     @test @time catch24(X) isa FeatureMatrix
@@ -72,19 +72,19 @@ end
 
 # Test short name version is the same as the full version
 println("Testing short names, c22")
-@testitem "Short names" setup=[Setup] begin
+@testitem "Short names" setup = [Setup] begin
     X = randn(1000, 100)
     @test parent(catch24(X)) == parent(c24(X))
 end
 
 println("Testing 1000×20×20 array input")
-@testitem "Arrays" setup=[Setup] begin
+@testitem "Arrays" setup = [Setup] begin
     X = randn(1000, 20, 20)
     @test @time catch24(X) isa FeatureArray{T, 3} where {T}
 end
 
 println("Testing input types")
-@testitem "Types" setup=[Setup] begin
+@testitem "Types" setup = [Setup] begin
     X = rand(Int16, 10, 10, 10)
     _F = catch24(X)
     @test eltype(_F) <: Float64
@@ -99,7 +99,7 @@ end
 
 println("Testing FeatureArray indexing")
 
-@testitem "FeatureArray indexing" setup=[Setup] begin
+@testitem "FeatureArray indexing" setup = [Setup] begin
     𝑓s = [:DN_HistogramMode_5, :DN_HistogramMode_10]
     𝑓 = FeatureSet([DN_HistogramMode_10, DN_HistogramMode_5])
 
@@ -123,7 +123,7 @@ println("Testing FeatureArray indexing")
 end
 
 println("Testing Feature evaluation with DimArrays")
-@testitem "DimArrays" setup=[Setup] begin
+@testitem "DimArrays" setup = [Setup] begin
     x = DimArray(randn(100), (Dim{:x}(1:100),))
     @test first(CO_f1ecac(x)) == CO_f1ecac(x |> vec)
     @test length(CO_f1ecac(x)) == 1
@@ -131,7 +131,7 @@ println("Testing Feature evaluation with DimArrays")
 end
 
 println("Testing CovarianceImage")
-@testitem "CovarianceImage" setup=[Setup] begin
+@testitem "CovarianceImage" setup = [Setup] begin
     using Plots
     using Clustering
     X = hcat(randn(100, 100), 1:100)
@@ -140,23 +140,27 @@ println("Testing CovarianceImage")
     @test covarianceimage(F; colormode = :top, verbose) isa Plots.Plot
     @test covarianceimage(F; colormode = :all, verbose) isa Plots.Plot
     @test covarianceimage(F; colormode = :raw, verbose, colorbargrad = :viridis) isa
-          Plots.Plot
+        Plots.Plot
 end
 
 println("Testing SuperFeatures")
-@testitem "SuperFeatures" setup=[Setup] begin
+@testitem "SuperFeatures" setup = [Setup] begin
     𝐱 = rand(1000, 2)
     @test_nowarn Catch22.zᶠ(𝐱)
-    μ = SuperFeature(Catch22.mean, :μ, "Mean value of the z-scored time series", ["0"],
-                     Catch22.zᶠ)
-    σ = SuperFeature(Catch22.std, :σ, "Standard deviation of the z-scored time series",
-                     ["1"], Catch22.zᶠ)
+    μ = SuperFeature(
+        Catch22.mean, :μ, "Mean value of the z-scored time series", ["0"],
+        Catch22.zᶠ
+    )
+    σ = SuperFeature(
+        Catch22.std, :σ, "Standard deviation of the z-scored time series",
+        ["1"], Catch22.zᶠ
+    )
     𝒇 = SuperFeatureSet([μ, σ])
-    @test all(isapprox.(𝒇(𝐱), [0.0 0.0; 1.0 1.0]; atol = 1e-9))
+    @test all(isapprox.(𝒇(𝐱), [0.0 0.0; 1.0 1.0]; atol = 1.0e-9))
 end
 
 println("Testing Catch22 SuperFeatures")
-@testitem "Catch22 SuperFeatures" setup=[Setup] begin
+@testitem "Catch22 SuperFeatures" setup = [Setup] begin
     catch22² = vcat(fill(catch22, 22)...)
     catch22_raw² = vcat(fill(Catch22.catch22_raw, 22)...)
     X = rand(1000, 10)
@@ -173,17 +177,17 @@ println("Testing Catch22 SuperFeatures")
 end
 
 println("Testing multithreading")
-@testitem "Multithreading" setup=[Setup] begin
+@testitem "Multithreading" setup = [Setup] begin
     X = randn(10000)
     meths = Catch22.featurenames
     cres = zeros(size(X)[1], length(meths))
     window = 100
     f(X) =
         for j in eachindex(meths)
-            Threads.@threads for i in 1:(size(X, 1) - window)
-                @inbounds cres[i + window, j] = catch22[meths[j]](X[i:(i + window)])
-            end
+        Threads.@threads for i in 1:(size(X, 1) - window)
+            @inbounds cres[i + window, j] = catch22[meths[j]](X[i:(i + window)])
         end
+    end
 
     g(X) = Threads.@threads for i in 1:(size(X, 1) - window)
         @inbounds cres[i + window, :] = catch22[meths](X[i:(i + window)])
@@ -207,7 +211,7 @@ println("Testing multithreading")
 end
 
 println("Testing performance")
-@testitem "Performance" setup=[Setup] begin
+@testitem "Performance" setup = [Setup] begin
     @inferred Catch22.catch22(randn(100))
 
     dataset = randn(10000000)
@@ -222,13 +226,13 @@ println("Testing performance")
 
     t = @timed Catch22._catch22(dataset, fname)
     t = @timed Catch22._catch22(dataset, fname)
-    @test t.time≈tm rtol=1 # The nancheck takes some time
+    @test t.time ≈ tm rtol = 1 # The nancheck takes some time
     @test t.bytes < 500
 
     m = getmethod(Catch22.catch22_raw[fname])
     t = @timed m(dataset)
     t = @timed m(dataset)
-    @test t.time≈tm rtol=1
+    @test t.time ≈ tm rtol = 1
     @test t.bytes < 500
     tf = t.time
 
@@ -236,12 +240,12 @@ println("Testing performance")
     ta = @benchmark $m($dataset)
     m = Catch22.zᶠ
     tb = @benchmark $m($dataset)
-    @test median(ta).time≈median(tb).time rtol=0.15
-    tz = median(tb).time / 1e9
+    @test median(ta).time ≈ median(tb).time rtol = 0.15
+    tz = median(tb).time / 1.0e9
 
     m = feature |> getmethod
     t = @timed m(dataset)
     t = @timed m(dataset)
-    @test t.time≈(tm + tz) rtol=1 # Feature time + zscore time
+    @test t.time ≈ (tm + tz) rtol = 1 # Feature time + zscore time
     @test t.bytes < Base.sizeof(dataset) + 5000 # Just one deepcopy of the dataset, for the zscore
 end

@@ -1,7 +1,7 @@
 name = "Catch22"
 uuid = "acdeb78f-3d39-4310-8fdf-6d75c17c6d5a"
-authors = ["Brendan Harris <bhar9988@uni.sydney.edu.au> and contributors"]
 version = "0.7.0"
+authors = ["Brendan Harris <bhar9988@uni.sydney.edu.au> and contributors"]
 
 [deps]
 DelimitedFiles = "8bb1440f-4735-579b-a4ab-409b98df4dab"
@@ -16,10 +16,10 @@ TimeseriesFeatures = "f3112013-b923-4dfa-b867-8806c885f823"
 catch22_jll = "8a07c0c5-99ad-56cb-bc82-72eed1bb61ce"
 
 [compat]
-DimensionalData = "0.19 - 0.29"
+DimensionalData = "0.19 - 0.30"
 Reexport = "0.2, 1"
 Requires = "1"
-TimeseriesFeatures = "0.6"
+TimeseriesFeatures = "0.6 - 0.7"
 catch22_jll = "0.5"
 julia = "1.10"
 

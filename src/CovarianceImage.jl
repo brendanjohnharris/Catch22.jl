@@ -9,7 +9,7 @@ function clustercovariance(Σ²)
     if !issymmetric(Dr)
         @warn "Correlation distance matrix is not symmetric, so not clustering"
     end
-    Clustering.hclust(Dr; linkage = :average, branchorder = :optimal)
+    return Clustering.hclust(Dr; linkage = :average, branchorder = :optimal)
 end
 
 """
@@ -27,10 +27,12 @@ Either provide as positional arguments a vector `f` of N row names and an N×_ m
 """
 covarianceimage
 @userplot CovarianceImage
-Plots.@recipe function f(g::CovarianceImage;
-                         palette = [:cornflowerblue, :crimson, :forestgreen],
-                         colormode = :top, colorbargrad = :binary, donames = true,
-                         docluster = true, verbose = true, dendrogram = false)
+Plots.@recipe function f(
+        g::CovarianceImage;
+        palette = [:cornflowerblue, :crimson, :forestgreen],
+        colormode = :top, colorbargrad = :binary, donames = true,
+        docluster = true, verbose = true, dendrogram = false
+    )
     if g.args[1] isa AbstractFeatureArray || g.args[1] isa AbstractDimArray
         f, Σ² = string.(lookup(g.args[1], 1)), g.args[1] |> Array
     elseif length(g.args) == 2 && g.args[2] isa AbstractMatrix
@@ -68,8 +70,12 @@ Plots.@recipe function f(g::CovarianceImage;
         vidxs = sortperm(abs.(P[:, 1]), rev = true)
         verbose &&
             isnothing(printstyled("Feature weights:\n", color = :red, bold = true)) &&
-            display(vcat(hcat("Feature", ["PC$i" for i in 1:N]...),
-                         hcat(f̂[vidxs], round.(P[vidxs, 1:N], sigdigits = 3))))
+            display(
+            vcat(
+                hcat("Feature", ["PC$i" for i in 1:N]...),
+                hcat(f̂[vidxs], round.(P[vidxs, 1:N], sigdigits = 3))
+            )
+        )
         P = abs.(P)
         # if colormode isa Matrix # Supply custom coloring matrix. Should be an nfeature×ncolor matrix
         #     P = colormode

@@ -11,8 +11,10 @@ T̂ = MinMax(T, dims = 1)(T)
 
 begin # ? Plot
     f = Figure(size = (1080, 720))
-    ax = Axis(f[1, 1]; ylabel = "Feature", xlabel = "Length (samples)",
-              yticks = (1:length(catch22), string.(getnames(catch22))), xscale = log10)
+    ax = Axis(
+        f[1, 1]; ylabel = "Feature", xlabel = "Length (samples)",
+        yticks = (1:length(catch22), string.(getnames(catch22))), xscale = log10
+    )
     p = heatmap!(ax, length.(𝒳), 1:length(catch22), T̂')
     Colorbar(f[1, 2], p, label = "Normalized time")
     save(joinpath(@__DIR__, "featuretimetest.pdf"), f)

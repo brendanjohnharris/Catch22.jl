@@ -7,14 +7,18 @@ using CairoMakie
 
 featureset = Catch22.catch22_raw
 N⃗ = Int.(round.(exp10.(2:0.25:5)));
-scaling = DimArray(zeros(length(featureset), 2, length(N⃗)),
-                   (Feat(getnames(featureset)), Dim{:resource}([:time, :memory]),
-                    Dim{:length}(N⃗)))
+scaling = DimArray(
+    zeros(length(featureset), 2, length(N⃗)),
+    (
+        Feat(getnames(featureset)), Dim{:resource}([:time, :memory]),
+        Dim{:length}(N⃗),
+    )
+)
 
 for f in featureset
     @info "Benchmarking $f"
     for N in N⃗
-        log = @benchmark $f(x) setup=(x = randn($N)) seconds=2 samples=100
+        log = @benchmark $f(x) setup = (x = randn($N)) seconds = 2 samples = 100
         log = median(log)
         scaling[At(f.name), At(:time), At(N)] = log |> time # * Time in nanoseconds!
         scaling[At(f.name), At(:memory), At(N)] = log |> memory
