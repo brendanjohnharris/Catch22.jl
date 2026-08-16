@@ -1,6 +1,6 @@
 name = "Catch22"
 uuid = "acdeb78f-3d39-4310-8fdf-6d75c17c6d5a"
-version = "0.7.0"
+version = "0.7.1"
 authors = ["Brendan Harris <bhar9988@uni.sydney.edu.au> and contributors"]
 
 [deps]
@@ -20,7 +20,7 @@ DimensionalData = "0.19 - 0.30"
 Reexport = "0.2, 1"
 Requires = "1"
 TimeseriesFeatures = "0.6 - 0.7"
-catch22_jll = "0.5"
+catch22_jll = "0.6"
 julia = "1.10"
 
 [extras]

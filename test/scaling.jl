@@ -2,19 +2,18 @@ using Catch22
 using Plots
 using MoreMaps
 
-chart = Chart(Threaded())
-
-function timeCatch22(𝒳)
+function timeCatch22(𝒳, chart)
     t⃗ = [(@info size(𝐱); @timed catch22(𝐱; chart)) for 𝐱 in 𝒳]
     return ([x.time for x in t⃗], [x.bytes for x in t⃗])
 end;
-timeCatch22([randn(1000)])
+timeCatch22([randn(1000)], Chart())
 
 N⃗ = Int.(round.(exp10.(0.9:0.1:5)));
 
 ## Single-threaded
+# Threaded() would map over a single time series, adding thread overhead but no parallelism
 𝒳 = [randn(N) for N in N⃗];
-t⃗, b⃗ = timeCatch22(𝒳);
+t⃗, b⃗ = timeCatch22(𝒳, Chart());
 
 gray = :gray50
 p = plot(
@@ -46,8 +45,8 @@ savefig(p, joinpath(@__DIR__, "../scaling.png"))
 ## Multi-threaded
 nsamples = 100
 𝒳 = [randn(N, nsamples) for N in N⃗];
-timeCatch22([randn(1000, 100)])
-t⃗, b⃗ = timeCatch22(𝒳);
+timeCatch22([randn(1000, 100)], Chart(Threaded()))
+t⃗, b⃗ = timeCatch22(𝒳, Chart(Threaded()));
 t⃗ = t⃗ ./ nsamples # Time per time series
 b⃗ = b⃗ ./ nsamples # Memory per time series
 

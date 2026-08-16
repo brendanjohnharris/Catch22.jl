@@ -54,6 +54,9 @@ If a vector is provided (a single time series) then a vector of feature values w
 
 Finally, note that since `catch22` is a `FeatureSet` it can be indexed with a vector of feature names as symbols to calculate a `FeatureArray` for a subset of _catch22_. For details on the `Feature`, `FeatureSet` and `FeatureArray` types check out the package docs.
 
+> [!NOTE]
+> Since v0.7, `FeatureSet`'s are evaluated serially by default. To enable threaded evaluation, please pass `chart = MoreMaps.Threaded()` (see [TimeseriesFeatures.jl](https://github.com/brendanjohnharris/TimeseriesFeatures.jl#parallelism-and-progress-with-moremapsjl)).
+
 <br>
 
 # Single-threaded performance
