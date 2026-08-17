@@ -91,7 +91,7 @@ println("Testing input types")
     for T in [Int, Int32, Float32, Float64]
         F = catch24(convert(Array{T}, X))
         @test eltype(F) <: Float64
-        @test F ≈ _F
+        @test isnearlyequalorallnan(F, _F)
         @test F[DN_Mean] ≈ dropdims(mean(T.(X), dims = 1), dims = 1)
         @test F[DN_Spread_Std] ≈ dropdims(std(T.(X), dims = 1), dims = 1)
     end
