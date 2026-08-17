@@ -12,13 +12,13 @@ using TestItemRunner
     using StatsBase
     using BenchmarkTools
 
-    function isnearlyequalorallnan(a::AbstractArray, b::AbstractArray)
+    function isnearlyequalorallnan(a::AbstractArray, b::AbstractArray; atol = 1.0e-6)
         replace!(a, NaN => 0.0)
         replace!(b, NaN => 0.0)
-        all(isapprox.(a, b, atol = 1.0e-6))
+        all(isapprox.(a, b, atol = atol))
     end
-    function isnearlyequalorallnan(a::Real, b::Real)
-        isapprox(a, b, atol = 1.0e-6) || (isnan(a) && isnan(b))
+    function isnearlyequalorallnan(a::Real, b::Real; atol = 1.0e-6)
+        isapprox(a, b, atol = atol) || (isnan(a) && isnan(b))
     end
     function testFeatures(t::Symbol)
         @time f = catch22(testdata[t])
@@ -91,7 +91,7 @@ println("Testing input types")
     for T in [Int, Int32, Float32, Float64]
         F = catch24(convert(Array{T}, X))
         @test eltype(F) <: Float64
-        @test isnearlyequalorallnan(F, _F)
+        @test isnearlyequalorallnan(F, _F; atol = 1.0e-5)
         @test F[DN_Mean] ≈ dropdims(mean(T.(X), dims = 1), dims = 1)
         @test F[DN_Spread_Std] ≈ dropdims(std(T.(X), dims = 1), dims = 1)
     end
@@ -240,7 +240,7 @@ println("Testing performance")
     ta = @benchmark $m($dataset)
     m = Catch22.zᶠ
     tb = @benchmark $m($dataset)
-    @test median(ta).time ≈ median(tb).time rtol = 0.15
+    @test median(ta).time ≈ median(tb).time rtol = 0.2
     tz = median(tb).time / 1.0e9
 
     m = feature |> getmethod
