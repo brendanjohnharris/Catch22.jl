@@ -32,8 +32,22 @@ jobs:
         arch:
           - x64
         exclude:
+          # macOS runners are arm64; x64 would run under Rosetta and give noisy timings
           - os: macOS-latest
-            arch: x86
+            arch: x64
+        include:
+          - os: macOS-latest
+            arch: aarch64
+            version: '1.10'
+          - os: macOS-latest
+            arch: aarch64
+            version: '1.11'
+          - os: macOS-latest
+            arch: aarch64
+            version: '1.12'
+          - os: macOS-latest
+            arch: aarch64
+            version: 'pre'
     steps:
       - uses: actions/checkout@v4
       - uses: julia-actions/setup-julia@v2
