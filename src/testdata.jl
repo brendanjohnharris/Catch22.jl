@@ -6,7 +6,7 @@ test_hash = artifact_hash("testdata_v0_6", artifact_toml)
 
 if test_hash == nothing || !artifact_exists(test_hash)
     test_hash = create_artifact() do artifact_dir
-        test_url_base = "https://raw.githubusercontent.com/DynamicsAndNeuralSystems/catch22/643562150e6c64fc740ceb2f65bbbc8df9209afd/testData"
+        test_url_base = "https://raw.githubusercontent.com/DynamicsAndNeuralSystems/catch22/068220ae5d5aac3e966104f17e8e430cf32c445d/testData"
         testfiles = [
             "basic/test.txt",
             "basic/test2.txt",

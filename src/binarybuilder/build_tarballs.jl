@@ -9,7 +9,7 @@ version = v"0.7.0"
 sources = [
     GitSource(
         "https://github.com/DynamicsAndNeuralSystems/catch22.git",
-        "643562150e6c64fc740ceb2f65bbbc8df9209afd"
+        "068220ae5d5aac3e966104f17e8e430cf32c445d"
     ),
 ]
 
