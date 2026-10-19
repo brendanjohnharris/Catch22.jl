@@ -38,7 +38,13 @@ println("Testing individual features")
             @inferred Catch22._catch22(testdata[:test], getname(f))
             @inferred Catch22._catch22(randn(100, 10), getname(f))
         end
-        @test isnearlyequalorallnan(f(testdata[:test]), testoutput[:test][getname(f)])
+        # catch22's basic test outputs hold only the 22 features: check the two
+        # catch24 features (mean and sample standard deviation) directly
+        x = testdata[:test]
+        expected = get(testoutput[:test], getname(f)) do
+            getname(f) === :DN_Mean ? mean(x) : std(x)
+        end
+        @test isnearlyequalorallnan(f(x), expected)
     end
 end
 
