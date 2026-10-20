@@ -42,7 +42,7 @@ println("Testing individual features")
         # catch24 features (mean and sample standard deviation) directly
         x = testdata[:test]
         expected = get(testoutput[:test], getname(f)) do
-            getname(f) === :DN_Mean ? mean(x) : std(x)
+            (; DN_Mean = mean(x), DN_Spread_Std = std(x))[getname(f)] # errors for any other missing feature
         end
         @test isnearlyequalorallnan(f(x), expected)
     end

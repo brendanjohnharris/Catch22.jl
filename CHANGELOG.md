@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.8.0] - Unreleased
+## [0.8.0] - 2026-10-20
 
 - **Breaking (feature values)**: requires `catch22_jll` 0.7, built from catch22 with four features corrected to match their MATLAB (_hctsa_) definitions (DynamicsAndNeuralSystems/catch22#63): `PD_PeriodicityWang_th0_01` and `IN_AutoMutualInfoStats_40_gaussian_fmmi` now return the lag (previously the lag minus one); `SB_BinaryStats_mean_longstretch1` and `SB_BinaryStats_diff_longstretch0` now return exact run lengths.
 - Test data now comes from DynamicsAndNeuralSystems/catch22 (new `testData/` layout).
