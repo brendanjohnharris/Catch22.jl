@@ -18,7 +18,7 @@ const featureindex = Dict{Symbol, Cint}()
 
 function __init__()
     catch22_jll.__init__()
-    for name in catch24_featurenames
+    for names in (catch24_featurenames, short_catch24_featurenames), name in names
         i = ccall((:catch22_feature_index, libcatch22), Cint, (Cstring,), String(name))
         i < 0 && error("catch22_jll's libcatch22 has no feature named $name")
         featureindex[name] = i
@@ -48,18 +48,24 @@ function z_score(𝐱::AbstractVector{<:Real})
 end
 const zᶠ = Feature(z_score, :z_score, "𝐱 → (𝐱 - μ(𝐱))/σ(𝐱), as catch22_zscore", ["normalization"])
 
+include("masks.jl")
+
 # Feature `fName` of a series as given: no z-scoring and no masking
 # (catch22_compute_feature_raw, which checks the input itself: NaN for NaN/Inf input and
-# for a constant series)
+# for a constant series). A NaN that the C pipeline would mask is flagged (masks.jl).
 function _ccall(fName::Symbol)
     i = featureindex[fName]
     return function f(𝐱::AbstractVector{Float64})::Float64
         out = Ref{Cdouble}(NaN)
-        ccall(
+        status = ccall(
             (:catch22_compute_feature_raw, libcatch22), Cint,
             (Ptr{Cdouble}, Cint, Cint, Ref{Cdouble}), 𝐱, length(𝐱), i, out
         )
-        return out[]
+        v = out[]
+        if status == 0 && isnan(v) && !isnan(maskvalue(fName, length(𝐱)))
+            return maskednan(length(𝐱))
+        end
+        return v
     end
 end
 

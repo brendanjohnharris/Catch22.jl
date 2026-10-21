@@ -21,20 +21,23 @@ using TestItemRunner
         isapprox(a, b, atol = atol) || (isnan(a) && isnan(b))
     end
     # catch22's expected outputs are masked (a NaN of a valid series replaced by the
-    # feature's mask value), which Catch22.jl does not do: mask as the C does for comparison
-    maskvalue(name, n) = ccall(
-        (:catch22_mask_value, Catch22.libcatch22), Cdouble, (Cint, Cint),
-        Catch22.featureindex[name], n
-    )
-    function masked(f::AbstractVector, x::AbstractVector)
-        all(isfinite, x) || return collect(f)
-        [isnan(v) ? maskvalue(name, length(x)) : v for (name, v) in zip(getnames(f), f)]
-    end
+    # feature's mask value); Catch22.jl flags such NaNs instead, so mask for comparison
     function testFeatures(t::Symbol)
         x = testdata[t]
         @time f = catch24(x)
         out = testoutput[t]
-        isnearlyequalorallnan(masked(f, x), getindex.((out,), getnames(f)))
+        isnearlyequalorallnan(collect(applymask(f)), getindex.((out,), getnames(f)))
+    end
+    # catch22_compute with masking: the masked values and which were masked
+    function ccompute(x::AbstractVector{Float64})
+        out = zeros(24)
+        masked = zeros(Cint, 24)
+        ccall(
+            (:catch22_compute, Catch22.libcatch22), Cint,
+            (Ptr{Cdouble}, Cint, Cint, Cint, Ptr{Cdouble}, Ptr{Cint}),
+            x, length(x), 1, 1, out, masked
+        )
+        out, masked .== 1
     end
     # The C pipeline for feature i of x (catch22_compute_feature, z-scoring in C), unmasked
     function cfeature(x::AbstractVector{Float64}, name::Symbol)
@@ -90,6 +93,41 @@ end
     @test all(isnan, catch22(x))
     @test DN_mean(x) == 1.5 && isnan(DN_Spread_std(x)) == false
     @test all(isnan, catch24([1.0, NaN, 3.0]))
+end
+
+@testitem "Masked NaNs" setup = [Setup] begin
+    # A NaN the C pipeline would mask carries a flag and the series length in its payload,
+    # so applymask reproduces catch22_compute's masked output from the array alone
+    series = [randn(n) for n in [1, 2, 3, 5, 12, 50, 1000]]
+    append!(series, [fill(1.5, n) for n in [1, 3, 50]])
+    push!(series, [1.0, NaN, 3.0], [1.0, Inf, 3.0])
+    for x in series
+        F = catch24(x)
+        out, masked = ccompute(x)
+        @test ismasked.(F) == masked
+        @test isequal(collect(applymask(F)), out)
+        @test all(masklength.(F[masked]) .== length(x))
+        @test !any(ismasked, F[.!masked]) && isequal(F[.!masked], out[.!masked])
+        @test isequal(collect(applymask(c24(x))), out) # short names resolve too
+    end
+    x = fill(1.5, 50)
+    @test ismasked(DN_HistogramMode_5(x)) && !ismasked(DN_mean(x))
+    @test applymask(CO_FirstMin_ac(x), :CO_FirstMin_ac) == 50 # the mask value depends on n
+    @test Catch22.maskvalue(:acf_first_min, 50) == 50
+    @test isnan(Catch22.maskvalue(:DN_mean, 50))
+    @test !ismasked(NaN) && !ismasked(1.0) && !ismasked(1)
+
+    # the flag survives what happens to feature arrays: storage, slicing, arithmetic,
+    # binary IO; not text
+    F = catch24([x fill(2.0, 50) randn(50)])
+    M = parent(F)
+    @test ismasked.(M[:, 1]) == ismasked.(vec(M)[1:24]) == ismasked.(M .* 2.0)[:, 1]
+    io = IOBuffer()
+    write(io, M)
+    @test ismasked.(reshape(reinterpret(Float64, take!(io)), size(M))) == ismasked.(M)
+    @test !ismasked(parse(Float64, string(M[1, 1])))
+    @test isequal(collect(applymask(F[1:5, :])), collect(applymask(F))[1:5, :])
+    @test isequal(collect(applymask(hcat(F, F)))[:, 1:3], collect(applymask(F)))
 end
 # Test features one by one
 println("Testing individual features")
