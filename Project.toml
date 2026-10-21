@@ -15,12 +15,16 @@ Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 TimeseriesFeatures = "f3112013-b923-4dfa-b867-8806c885f823"
 catch22_jll = "8a07c0c5-99ad-56cb-bc82-72eed1bb61ce"
 
+[sources]
+TimeseriesFeatures = {path = "../TimeseriesFeatures.jl"}
+catch22_jll = {path = "/suphys/bhar9988/.julia/dev/catch22_jll"}
+
 [compat]
 DimensionalData = "0.19 - 0.30"
 Reexport = "0.2, 1"
 Requires = "1"
 TimeseriesFeatures = "0.6 - 0.7"
-catch22_jll = "0.7"
+catch22_jll = "0.8"
 julia = "1.10"
 
 [extras]

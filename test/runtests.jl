@@ -20,15 +20,76 @@ using TestItemRunner
     function isnearlyequalorallnan(a::Real, b::Real; atol = 1.0e-6)
         isapprox(a, b, atol = atol) || (isnan(a) && isnan(b))
     end
+    # catch22's expected outputs are masked (a NaN of a valid series replaced by the
+    # feature's mask value), which Catch22.jl does not do: mask as the C does for comparison
+    maskvalue(name, n) = ccall(
+        (:catch22_mask_value, Catch22.libcatch22), Cdouble, (Cint, Cint),
+        Catch22.featureindex[name], n
+    )
+    function masked(f::AbstractVector, x::AbstractVector)
+        all(isfinite, x) || return collect(f)
+        [isnan(v) ? maskvalue(name, length(x)) : v for (name, v) in zip(getnames(f), f)]
+    end
     function testFeatures(t::Symbol)
-        @time f = catch22(testdata[t])
+        x = testdata[t]
+        @time f = catch24(x)
         out = testoutput[t]
-        if isnothing(out)
-            all(isnan.(f))
-        else
-            isnearlyequalorallnan(Array(f), getindex.((out,), getnames(f)))
+        isnearlyequalorallnan(masked(f, x), getindex.((out,), getnames(f)))
+    end
+    # The C pipeline for feature i of x (catch22_compute_feature, z-scoring in C), unmasked
+    function cfeature(x::AbstractVector{Float64}, name::Symbol)
+        out = Ref{Cdouble}(NaN)
+        ccall(
+            (:catch22_compute_feature, Catch22.libcatch22), Cint,
+            (Ptr{Cdouble}, Cint, Cint, Cint, Ref{Cdouble}, Ptr{Cint}),
+            x, length(x), Catch22.featureindex[name], 0, out, C_NULL
+        )
+        out[]
+    end
+end
+
+@testitem "Feature index" setup = [Setup] begin
+    # metadata.jl lists the features in the C library's order, under its long and short names
+    names = Catch22.catch24_featurenames
+    @test [Catch22.featureindex[n] for n in names] == 0:23
+    cname(i) = Symbol(unsafe_string(ccall((:catch22_feature_name, Catch22.libcatch22), Cstring, (Cint,), i)))
+    cshort(i) = Symbol(unsafe_string(ccall((:catch22_short_name, Catch22.libcatch22), Cstring, (Cint,), i)))
+    clegacy(i) = Symbol(unsafe_string(ccall((:catch22_legacy_name, Catch22.libcatch22), Cstring, (Cint,), i)))
+    @test cname.(0:23) == names
+    @test cshort.(0:23) == Catch22.short_catch24_featurenames
+    @test clegacy.(0:23) == Catch22.legacy_catch24_featurenames
+    @test getnames(catch24) == names
+    @test getnames(c24) == Catch22.short_catch24_featurenames
+end
+
+@testitem "Legacy names" setup = [Setup] begin
+    for (old, new) in zip(Catch22.legacy_catch24_featurenames, Catch22.catch24_featurenames)
+        @test getfield(Catch22, old) === getfield(Catch22, new)
+    end
+    @test Catch22.CO_f1ecac === CO_FirstCrossing_acf_1e_pointOfCrossing
+    @test Catch22.DN_Mean === DN_mean
+end
+
+@testitem "Matches the C pipeline" setup = [Setup] begin
+    # catch22_zscore then catch22_compute_feature_raw by index, as catch22_compute_feature
+    # does in C: bit for bit, at any scale (#73's power-of-two scaling comes along)
+    for n in [1, 2, 3, 4, 5, 10, 50, 1000], trial in 1:3, scale in [1.0, 1.0e-200, 1.0e200]
+        x = scale .* (n == 1000 ? cumsum(randn(n)) : randn(n))
+        F = catch24(x)
+        for name in getnames(F)
+            @test isequal(F[name], cfeature(x, name))
         end
     end
+    x = randn(1000)
+    @test Catch22.zᶠ(x) == Catch22.z_score(x)
+    @test isapprox(mean(Catch22.z_score(x)), 0; atol = 1.0e-12) && std(Catch22.z_score(x)) ≈ 1
+    @test Catch22.z_score(fill(1.5, 50)) == fill(1.5, 50) # constant: unchanged, as the C
+    @test all(isnan, Catch22.z_score([1.0, Inf, 3.0]))
+    @test Catch22.z_score(Int32[1, 2, 3]) == Catch22.z_score([1.0, 2.0, 3.0])
+    x = fill(1.5, 50) # constant: NaN for the catch22 features, as the C
+    @test all(isnan, catch22(x))
+    @test DN_mean(x) == 1.5 && isnan(DN_Spread_std(x)) == false
+    @test all(isnan, catch24([1.0, NaN, 3.0]))
 end
 # Test features one by one
 println("Testing individual features")
@@ -38,14 +99,12 @@ println("Testing individual features")
             @inferred Catch22._catch22(testdata[:test], getname(f))
             @inferred Catch22._catch22(randn(100, 10), getname(f))
         end
-        # catch22's basic test outputs hold only the 22 features: check the two
-        # catch24 features (mean and sample standard deviation) directly
         x = testdata[:test]
-        expected = get(testoutput[:test], getname(f)) do
-            (; DN_Mean = mean(x), DN_Spread_Std = std(x))[getname(f)] # errors for any other missing feature
-        end
-        @test isnearlyequalorallnan(f(x), expected)
+        @test isnearlyequalorallnan(f(x), testoutput[:test][getname(f)])
     end
+    x = testdata[:test]
+    @test DN_mean(x) ≈ mean(x)
+    @test DN_Spread_std(x) ≈ std(x)
 end
 
 # Test catch22, time series by time series
@@ -98,8 +157,8 @@ println("Testing input types")
         F = catch24(convert(Array{T}, X))
         @test eltype(F) <: Float64
         @test isnearlyequalorallnan(F, _F; atol = 1.0e-5)
-        @test F[DN_Mean] ≈ dropdims(mean(T.(X), dims = 1), dims = 1)
-        @test F[DN_Spread_Std] ≈ dropdims(std(T.(X), dims = 1), dims = 1)
+        @test F[DN_mean] ≈ dropdims(mean(T.(X), dims = 1), dims = 1)
+        @test F[DN_Spread_std] ≈ dropdims(std(T.(X), dims = 1), dims = 1)
     end
 end
 
@@ -131,8 +190,8 @@ end
 println("Testing Feature evaluation with DimArrays")
 @testitem "DimArrays" setup = [Setup] begin
     x = DimArray(randn(100), (Dim{:x}(1:100),))
-    @test first(CO_f1ecac(x)) == CO_f1ecac(x |> vec)
-    @test length(CO_f1ecac(x)) == 1
+    @test first(CO_FirstCrossing_acf_1e_pointOfCrossing(x)) == CO_FirstCrossing_acf_1e_pointOfCrossing(x |> vec)
+    @test length(CO_FirstCrossing_acf_1e_pointOfCrossing(x)) == 1
     @test catch22(x) == catch22(x |> vec)
 end
 
@@ -140,7 +199,7 @@ println("Testing CovarianceImage")
 @testitem "CovarianceImage" setup = [Setup] begin
     using Plots
     using Clustering
-    X = hcat(randn(100, 100), 1:100)
+    X = hcat(randn(100, 100), cumsum(randn(100))) # a ramp's embedding_dist is NaN (all distances equal)
     F = catch22(X)
     verbose = false
     @test covarianceimage(F; colormode = :top, verbose) isa Plots.Plot
@@ -224,7 +283,7 @@ println("Testing performance")
     fname = :DN_HistogramMode_10
     feature = eval(fname)
 
-    m = Catch22._ccall(fname, Float64)
+    m = Catch22._ccall(fname)
     t = @timed m(dataset)
     t = @timed m(dataset)
     tm = t.time

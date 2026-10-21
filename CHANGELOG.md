@@ -1,5 +1,14 @@
 # Changelog
 
+## [Unreleased]
+
+- **Breaking (names)**: features take their catch22 v1 (hctsa) long and short names, in the C library's order: `CO_f1ecac` is `CO_FirstCrossing_acf_1e_pointOfCrossing`, `SP_Summaries_welch_rect_centroid` is `SP_Summaries_fft_wq_50` (short name `median_freq`), `DN_Mean` is `DN_mean`, and so on (`Catch22.legacy_catch24_featurenames` lists the old names against `Catch22.catch24_featurenames`). The old names remain as deprecated aliases.
+- **Breaking (feature values)**: requires `catch22_jll` built from catch22 main (v1.2.0 once released), whose feature definitions follow hctsa; see the catch22 changelog.
+- Short series (fewer than three points) are no longer NaN across the board: features are whatever the C library gives (a NaN where it cannot compute).
+- `Catch22.zᶠ` (and `Catch22.z_score`) z-score through `catch22_zscore`, so `catch22(x)` is bit for bit `catch22_compute(x)`; a constant series is returned unchanged by it (its catch22 features are NaN as before). `TimeseriesFeatures.zᶠ` is unchanged.
+- Features are bound by index through `catch22_compute_feature_raw` rather than by symbol through `dlsym`; `Catch22.featureindex` is looked up from the library at load and errors if a name is unknown to it. `Libdl` and `Catch22.featuretypes` are gone.
+- Test data comes from catch22 main (`testData/`, catch24 with masking, compared after masking).
+
 ## [0.8.0] - 2026-10-20
 
 - **Breaking (feature values)**: requires `catch22_jll` 0.7, built from catch22 with four features corrected to match their MATLAB (_hctsa_) definitions (DynamicsAndNeuralSystems/catch22#63): `PD_PeriodicityWang_th0_01` and `IN_AutoMutualInfoStats_40_gaussian_fmmi` now return the lag (previously the lag minus one); `SB_BinaryStats_mean_longstretch1` and `SB_BinaryStats_diff_longstretch0` now return exact run lengths.

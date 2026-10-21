@@ -2,27 +2,29 @@ using DelimitedFiles
 using Pkg.Artifacts
 
 artifact_toml = joinpath(pkgdir(Catch22), "Artifacts.toml")
-test_hash = artifact_hash("testdata_v0_6", artifact_toml)
+test_hash = artifact_hash("testdata_v1_2", artifact_toml)
 
 if test_hash == nothing || !artifact_exists(test_hash)
     test_hash = create_artifact() do artifact_dir
-        test_url_base = "https://raw.githubusercontent.com/DynamicsAndNeuralSystems/catch22/068220ae5d5aac3e966104f17e8e430cf32c445d/testData"
+        # catch22 main after #72 (catch22_zscore and friends); the expected outputs are
+        # catch24 with masking, as run_features writes them
+        test_url_base = "https://raw.githubusercontent.com/DynamicsAndNeuralSystems/catch22/cd7aa55bcb8a348879eab8303024061b4338b291/testData"
         testfiles = [
             "basic/test.txt",
             "basic/test2.txt",
+            "basic/testShort.txt",
+            "basic/testSinusoid.txt",
+            "pathological/testConstant.txt",
             "pathological/testInf.txt",
             "pathological/testInfMinus.txt",
             "pathological/testNaN.txt",
-            "basic/testShort.txt",
-            "basic/testSinusoid.txt",
-            "basic/test_output.txt",
-            "basic/test2_output.txt",
-            "basic/testShort_output.txt",
-            "basic/testSinusoid_output.txt",
+            "pathological/testOneSample.txt",
         ]
-        [download("$(test_url_base)/$f", joinpath(artifact_dir, basename(f))) for f in testfiles]
+        for f in testfiles, g in (f, replace(f, ".txt" => "_output.txt"))
+            download("$(test_url_base)/$g", joinpath(artifact_dir, basename(g)))
+        end
     end
-    bind_artifact!(artifact_toml, "testdata_v0_6", test_hash)
+    bind_artifact!(artifact_toml, "testdata_v1_2", test_hash)
 end
 
 test_datadir = artifact_path(test_hash)
@@ -30,11 +32,13 @@ test_datadir = artifact_path(test_hash)
 const testnames = [
     :test
     :test2
+    :testShort
+    :testSinusoid
+    :testConstant
     :testInf
     :testInfMinus
     :testNaN
-    :testShort
-    :testSinusoid
+    :testOneSample
 ]
 
 function loaddata(x)
