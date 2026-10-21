@@ -57,6 +57,24 @@ Finally, note that since `catch22` is a `FeatureSet` it can be indexed with a ve
 > [!NOTE]
 > Since v0.7, `FeatureSet`'s are evaluated serially by default. To enable threaded evaluation, please pass `chart = MoreMaps.Threaded()` (see [TimeseriesFeatures.jl](https://github.com/brendanjohnharris/TimeseriesFeatures.jl#parallelism-and-progress-with-moremapsjl)).
 
+## Masked values
+Some features cannot be computed for some valid time series: a constant series has no histogram mode, and a short series may have no first minimum of the autocorrelation.
+The _catch22_ C library replaces each such NaN by a per-feature 'mask' value, which for some features depends on the length of the time series (a missing first minimum of the autocorrelation becomes the length of the series, for example).
+Catch22.jl returns the NaN instead, but flags it in the bits of the NaN itself, together with the length of the time series:
+```Julia
+F = catch22(X)
+ismasked.(F) # a Bool FeatureArray marking the elements the C library would have masked
+masklength.(F[ismasked.(F)]) # the lengths of the time series behind the flagged NaNs
+```
+A NaN caused by a NaN or Inf in the input time series is not flagged.
+To reproduce the masked output of the C library, apply the masks:
+```Julia
+F̂ = applymask(F) # the same FeatureArray, with every flagged NaN replaced by that feature's mask value
+applymask(F[1:3, :]) # works on any slice or combination of feature arrays, without the time series
+```
+The flag survives storage, slicing, arithmetic and binary IO, but not conversion to text, so apply the masks before writing features to a CSV.
+`Catch22.maskvalue(name, n)` gives the mask value of a feature for a time series of length `n`.
+
 <br>
 
 # Single-threaded performance

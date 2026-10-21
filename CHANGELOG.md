@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.9.0] - 2026-10-21
+
+- **Breaking**: requires `catch22_jll` 1.2 (catch22 v1.2.0), whose features follow hctsa exactly; feature values change.
+- **Breaking**: features take their catch22 v1 long and short names, in the C order (`CO_f1ecac` is `CO_FirstCrossing_acf_1e_pointOfCrossing`, `DN_Mean` is `DN_mean`); the old names are deprecated aliases (`Catch22.legacy_catch24_featurenames`).
+- **Breaking**: no masking. A NaN that `catch22_compute` would mask is flagged in its payload: `ismasked`, `masklength`, and `applymask(F)` to reproduce the masked output.
+- Short series (under three points) are no longer all NaN.
+- `zᶠ` z-scores through `catch22_zscore`, so `catch22(x)` is bit for bit `catch22_compute(x)`.
+- Features are bound by index rather than `dlsym`; `Libdl` and `Catch22.featuretypes` are gone.
+- `DN_HistogramMode_5`/`_10`, `CO_Embed2_Dist_tau_d_expfit_meandiff` and `SC_FluctAnal_*` are 1.2 to 2.5 times slower (catch22 v1.0's hctsa definitions); `catch22(x)` as a whole is within 5% of 0.8.0.
+
 ## [0.8.0] - 2026-10-20
 
 - **Breaking (feature values)**: requires `catch22_jll` 0.7, built from catch22 with four features corrected to match their MATLAB (_hctsa_) definitions (DynamicsAndNeuralSystems/catch22#63): `PD_PeriodicityWang_th0_01` and `IN_AutoMutualInfoStats_40_gaussian_fmmi` now return the lag (previously the lag minus one); `SB_BinaryStats_mean_longstretch1` and `SB_BinaryStats_diff_longstretch0` now return exact run lengths.

@@ -1,20 +1,28 @@
 module Catch22
 using catch22_jll
 using DimensionalData
-using Libdl
 using Requires
 using Reexport
 using TimeseriesFeatures
 using LinearAlgebra
 import Statistics: mean, std, cov
 
+@reexport using TimeseriesFeatures
+
+include("metadata.jl")
+include("testdata.jl")
+
+# Each feature's index in the C library (catch22_feature_index), filled at load so a
+# library whose names disagree with metadata.jl fails loudly instead of binding wrongly
+const featureindex = Dict{Symbol, Cint}()
+
 function __init__()
     catch22_jll.__init__()
-    lib = dlopen(libcatch22)
-    global fbindings = Dict{Symbol, Ptr{Cvoid}}(
-        f => dlsym(lib, f)
-            for f in catch24_featurenames
-    )
+    for names in (catch24_featurenames, short_catch24_featurenames), name in names
+        i = ccall((:catch22_feature_index, libcatch22), Cint, (Cstring,), String(name))
+        i < 0 && error("catch22_jll's libcatch22 has no feature named $name")
+        featureindex[name] = i
+    end
 
     return @require Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80" begin
         @require Clustering = "aaaa29a8-35af-508c-8bc3-b662a17a0fe5" begin
@@ -23,19 +31,41 @@ function __init__()
     end
 end
 
-@reexport using TimeseriesFeatures
-import TimeseriesFeatures: zᶠ, z_score
-
-include("metadata.jl")
-include("testdata.jl")
-
-nancheck(𝐱::AbstractVector) = length(𝐱) < 3 || any(isnan, 𝐱) || any(isinf, 𝐱)
-
-function _ccall(fName::Symbol, ::Type{T}) where {T <: Integer}
-    return f(𝐱)::T = ccall(fbindings[fName], Cint, (Ptr{Cint}, Cint), 𝐱, length(𝐱))
+"""
+    z_score(𝐱::AbstractVector{<:Real})
+The z-score of `𝐱` as the C pipeline computes it (`catch22_zscore`), so that features of
+the result are bit for bit those of `catch22_compute`. A constant series is returned
+unchanged (the catch22 features are then NaN), and a series with NaN or Inf gives all NaN.
+"""
+function z_score(𝐱::AbstractVector{<:Real})
+    z = Vector{Float64}(𝐱) # one copy, z-scored in place
+    ccall(
+        (:catch22_zscore, libcatch22), Cint, (Ptr{Cdouble}, Cint, Ptr{Cdouble}),
+        z, length(z), z
+    )
+    return z
 end
-function _ccall(fName::Symbol, ::Type{T}) where {T <: AbstractFloat}
-    return f(𝐱)::T = ccall(fbindings[fName], Cdouble, (Ptr{Cdouble}, Cint), 𝐱, length(𝐱))
+const zᶠ = Feature(z_score, :z_score, "𝐱 → (𝐱 - μ(𝐱))/σ(𝐱), as catch22_zscore", ["normalization"])
+
+include("masks.jl")
+
+# Feature `fName` of a series as given: no z-scoring and no masking
+# (catch22_compute_feature_raw, which checks the input itself: NaN for NaN/Inf input and
+# for a constant series). A NaN that the C pipeline would mask is flagged (masks.jl).
+function _ccall(fName::Symbol)
+    i = featureindex[fName]
+    return function f(𝐱::AbstractVector{Float64})::Float64
+        out = Ref{Cdouble}(NaN)
+        status = ccall(
+            (:catch22_compute_feature_raw, libcatch22), Cint,
+            (Ptr{Cdouble}, Cint, Cint, Ref{Cdouble}), 𝐱, length(𝐱), i, out
+        )
+        v = out[]
+        if status == 0 && isnan(v) && !isnan(maskvalue(fName, length(𝐱)))
+            return maskednan(length(𝐱))
+        end
+        return v
+    end
 end
 
 """
@@ -50,19 +80,15 @@ Catch22._catch22(𝐱, :DN_HistogramMode_5)
 ```
 """
 function _catch22(𝐱::AbstractVector, fName::Symbol)::Float64
-    nancheck(𝐱) && return NaN
-    fType = featuretypes[fName]
-    return _ccall(fName, fType)(𝐱)
+    return _ccall(fName)(convert(Vector{Float64}, 𝐱))
 end
 function _catch22(X::AbstractMatrix, fName::Symbol)::Matrix{Float64}
     return mapslices(𝐱 -> _catch22(𝐱, fName), X, dims = [1])
 end
 
 const features = map(featurenames) do name
-    T = featuretypes[name]
     function feature(𝐱::AbstractVector{<:Real})::Float64
-        nancheck(𝐱) && return NaN
-        return _ccall(name, T)(convert(Vector{Float64}, 𝐱))
+        return _ccall(name)(convert(Vector{Float64}, 𝐱))
     end
 end
 
@@ -118,33 +144,31 @@ f = DN_HistogramMode_5(𝐱)
 """
 DN_HistogramMode_5
 
-# Special cases for DN_Mean and DN_Spread_Std, and shouldn't z_score the vector
-_DN_Mean(𝐱::AbstractVector{<:Real})::Float64 = nancheck(𝐱) ? NaN :
-    (
-        convert(Vector{Float64}, 𝐱) |>
-        _ccall(:DN_Mean, Cdouble)
-    )
-_DN_Spread_Std(𝐱::AbstractVector{<:Real})::Float64 = nancheck(𝐱) ? NaN :
-    (
-        convert(Vector{Float64}, 𝐱) |>
-        _ccall(:DN_Spread_Std, Cdouble)
-    )
-const DN_Mean = Feature(
-    _DN_Mean, :DN_Mean, "Arithmetic mean of time-series values",
+# Special cases for DN_mean and DN_Spread_std, which shouldn't z_score the vector
+_DN_mean(𝐱::AbstractVector{<:Real})::Float64 = convert(Vector{Float64}, 𝐱) |> _ccall(:DN_mean)
+_DN_Spread_std(𝐱::AbstractVector{<:Real})::Float64 = convert(Vector{Float64}, 𝐱) |> _ccall(:DN_Spread_std)
+const DN_mean = Feature(
+    _DN_mean, :DN_mean, "Arithmetic mean of time-series values",
     ["distribution", "location", "raw"]
 )
-const DN_Spread_Std = Feature(
-    _DN_Spread_Std, :DN_Spread_Std,
+const DN_Spread_std = Feature(
+    _DN_Spread_std, :DN_Spread_std,
     "Sample standard deviation of time-series values",
     ["distribution", "spread", "raw"]
 )
 
 """
     catch24 isa FeatureSet
-A feature set containing the mean (`DN_Mean`) and standard deviation (`DN_Spread_Std`) in addition to all `catch22` features. See [`catch22`](@ref).
+A feature set containing the mean (`DN_mean`) and standard deviation (`DN_Spread_std`) in addition to all `catch22` features. See [`catch22`](@ref).
 """
-catch24 = catch22 + DN_Mean + DN_Spread_Std
-export catch24, DN_Mean, DN_Spread_Std
+catch24 = catch22 + DN_mean + DN_Spread_std
+export catch24, DN_mean, DN_Spread_std
+
+# The catch22 v0.x names, as deprecated aliases of the renamed features
+for (old, new) in zip(legacy_catch24_featurenames, catch24_featurenames)
+    old == new && continue
+    @eval Base.@deprecate_binding $old $new
+end
 
 """
     c22
@@ -159,8 +183,8 @@ c22 = SuperFeatureSet(
     c24
 The Catch24 feature set with shortened names; see [`catch24`](@ref).
 """
-c24 = c22 + Feature(_DN_Mean, :mean, DN_Mean.description, DN_Mean.keywords) +
-    Feature(_DN_Spread_Std, :std, DN_Spread_Std.description, DN_Spread_Std.keywords)
+c24 = c22 + Feature(_DN_mean, :mean, DN_mean.description, DN_mean.keywords) +
+    Feature(_DN_Spread_std, :std, DN_Spread_std.description, DN_Spread_std.keywords)
 export c22, c24
 
 end
