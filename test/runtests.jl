@@ -75,7 +75,7 @@ end
 
 @testitem "Matches the C pipeline" setup = [Setup] begin
     # catch22_zscore then catch22_compute_feature_raw by index, as catch22_compute_feature
-    # does in C: bit for bit, at any scale (#73's power-of-two scaling comes along)
+    # does in C: bit for bit, at any scale
     for n in [1, 2, 3, 4, 5, 10, 50, 1000], trial in 1:3, scale in [1.0, 1.0e-200, 1.0e200]
         x = scale .* (n == 1000 ? cumsum(randn(n)) : randn(n))
         F = catch24(x)
@@ -89,6 +89,10 @@ end
     @test Catch22.z_score(fill(1.5, 50)) == fill(1.5, 50) # constant: unchanged, as the C
     @test all(isnan, Catch22.z_score([1.0, Inf, 3.0]))
     @test Catch22.z_score(Int32[1, 2, 3]) == Catch22.z_score([1.0, 2.0, 3.0])
+    x0 = copy(x)
+    @test Catch22.z_score(x) == Catch22.z_score(x0) && x == x0 # the input is untouched
+    X = randn(100, 3)
+    @test Catch22.z_score(view(X, :, 2)) == Catch22.z_score(X[:, 2])
     x = fill(1.5, 50) # constant: NaN for the catch22 features, as the C
     @test all(isnan, catch22(x))
     @test DN_mean(x) == 1.5 && isnan(DN_Spread_std(x)) == false

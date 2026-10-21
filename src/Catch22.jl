@@ -38,11 +38,10 @@ the result are bit for bit those of `catch22_compute`. A constant series is retu
 unchanged (the catch22 features are then NaN), and a series with NaN or Inf gives all NaN.
 """
 function z_score(𝐱::AbstractVector{<:Real})
-    y = convert(Vector{Float64}, 𝐱)
-    z = similar(y)
+    z = Vector{Float64}(𝐱) # one copy, z-scored in place
     ccall(
         (:catch22_zscore, libcatch22), Cint, (Ptr{Cdouble}, Cint, Ptr{Cdouble}),
-        y, length(y), z
+        z, length(z), z
     )
     return z
 end
