@@ -41,8 +41,7 @@ const testnames = [
 ]
 
 function loaddata(x)
-    return reduce(
-        vcat,
+    return vec( # a Vector even for one sample (reduce(vcat, ·) gives a scalar before Julia 1.13)
         readdlm(
             normpath(joinpath(test_datadir, String(x) * ".txt")), ' ', Float64,
             '\n'
