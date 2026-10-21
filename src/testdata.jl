@@ -6,9 +6,8 @@ test_hash = artifact_hash("testdata_v1_2", artifact_toml)
 
 if test_hash == nothing || !artifact_exists(test_hash)
     test_hash = create_artifact() do artifact_dir
-        # catch22 main after #72 (catch22_zscore and friends); the expected outputs are
-        # catch24 with masking, as run_features writes them
-        test_url_base = "https://raw.githubusercontent.com/DynamicsAndNeuralSystems/catch22/cd7aa55bcb8a348879eab8303024061b4338b291/testData"
+        # the expected outputs are catch24 with masking, as run_features writes them
+        test_url_base = "https://raw.githubusercontent.com/DynamicsAndNeuralSystems/catch22/v1.2.0/testData"
         testfiles = [
             "basic/test.txt",
             "basic/test2.txt",
